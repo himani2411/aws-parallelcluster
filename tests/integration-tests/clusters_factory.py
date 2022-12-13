@@ -44,7 +44,7 @@ def suppress_and_log_exception(func):
 class Cluster:
     """Contain all static and dynamic data related to a cluster instance."""
 
-    def __init__(self, name, ssh_key, config_file, region):
+    def __init__(self, name, ssh_key, config_file, region, test_cli_credentials=None):
         self.name = name
         self.config_file = config_file
         self.ssh_key = ssh_key
@@ -57,6 +57,7 @@ class Cluster:
         self.__cfn_outputs = None
         self.__cfn_resources = None
         self.__cfn_stack_arn = None
+        self.test_cli_credentials = test_cli_credentials
 
     def __repr__(self):
         attrs = ", ".join(["{key}={value}".format(key=key, value=repr(value)) for key, value in self.__dict__.items()])
@@ -130,7 +131,7 @@ class Cluster:
             logging.warning("CloudWatch logs for cluster %s are preserved due to failure.", self.name)
         try:
             self.cfn_stack_arn  # Cache cfn_stack_arn attribute before stack deletion
-            result = run_pcluster_command(cmd_args, log_error=False)
+            result = run_pcluster_command(cmd_args, log_error=False, test_cli_credentials=self.test_cli_credentials)
             if "DELETE_FAILED" in result.stdout:
                 error = "Cluster deletion failed for {0} with output: {1}".format(self.name, result.stdout)
                 logging.error(error)
@@ -399,9 +400,10 @@ class Cluster:
 class ClustersFactory:
     """Manage creation and destruction of pcluster clusters."""
 
-    def __init__(self, delete_logs_on_success=False):
+    def __init__(self, delete_logs_on_success=False, test_cli_credentials=None):
         self.__created_clusters = {}
         self._delete_logs_on_success = delete_logs_on_success
+        self.test_cli_credentials = test_cli_credentials
 
     def create_cluster(self, cluster, log_error=True, raise_on_error=True, **kwargs):
         """
@@ -417,10 +419,12 @@ class ClustersFactory:
 
         # create the cluster
         logging.info("Creating cluster {0} with config {1}".format(name, cluster.config_file))
+        self.test_cli_credentials = kwargs.get("test_cli_credentials")
         command, wait = self._build_command(cluster, kwargs)
         try:
-            result = run_pcluster_command(command, timeout=7200, raise_on_error=raise_on_error, log_error=log_error)
-
+            result = run_pcluster_command(
+                command, timeout=7200, raise_on_error=raise_on_error, log_error=log_error, **kwargs
+            )
             logging.info("create-cluster response: %s", result.stdout)
             response = json.loads(result.stdout)
             if wait:
@@ -470,10 +474,11 @@ class ClustersFactory:
             kwargs["suppress_validators"] = validators_list
 
         for k, val in kwargs.items():
-            if isinstance(val, (list, tuple)):
-                command.extend([f"--{kebab_case(k)}"] + list(map(str, val)))
-            else:
-                command.extend([f"--{kebab_case(k)}", str(val)])
+            if k != "test_cli_credentials":
+                if isinstance(val, (list, tuple)):
+                    command.extend([f"--{kebab_case(k)}"] + list(map(str, val)))
+                else:
+                    command.extend([f"--{kebab_case(k)}", str(val)])
 
         return command, wait
 

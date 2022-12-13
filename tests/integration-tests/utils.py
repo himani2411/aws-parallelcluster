@@ -80,7 +80,16 @@ def retry_if_subprocess_error(exception):
     return isinstance(exception, subprocess.CalledProcessError)
 
 
-def run_command(command, capture_output=True, log_error=True, env=None, timeout=None, raise_on_error=True, shell=False):
+def run_command(
+    command,
+    capture_output=True,
+    log_error=True,
+    env=None,
+    timeout=None,
+    raise_on_error=True,
+    shell=False,
+    test_cli_credentials=None,
+):
     """Execute shell command."""
     if isinstance(command, str) and not shell:
         command = shlex.split(command)
