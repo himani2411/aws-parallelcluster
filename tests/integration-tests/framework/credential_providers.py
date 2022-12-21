@@ -30,8 +30,11 @@ def run_pcluster_command(*args, custom_cli_credentials=None, **kwargs):
     if not region:
         region = os.environ["AWS_DEFAULT_REGION"]
 
-    if region in cli_credentials:
-        with sts_credential_provider(region, credential_arn=custom_cli_credentials or cli_credentials.get(region)):
+    if custom_cli_credentials:
+        with sts_credential_provider(region, credential_arn=custom_cli_credentials):
+            return run_command(*args, **kwargs)
+    elif region in cli_credentials:
+        with sts_credential_provider(region, credential_arn=cli_credentials.get(region)):
             return run_command(*args, **kwargs)
     else:
         return run_command(*args, **kwargs)
