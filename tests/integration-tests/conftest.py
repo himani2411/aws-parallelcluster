@@ -730,27 +730,6 @@ def inject_additional_config_settings(  # noqa: C901
                     compute_resource["MaxCount"] = 150
 
     configure_scheduler_plugin(scheduler_plugin_configuration, config_content)
-    # Forcing the usage of Run-instance API for creation of fleet
-    # when we use InstanceType instead of Instances/InstanceType
-    if (
-        scheduler == "slurm"
-        and dict_has_nested_key(config_content, ("Scheduling", "SlurmQueues"))
-        and request.config.getoption("force_run_instances")
-    ):
-        for queues in config_content["Scheduling"]["SlurmQueues"]:
-            if dict_has_nested_key(queues, ["ComputeResources"]):
-                for compute_resources in queues["ComputeResources"]:
-                    if dict_has_nested_key(compute_resources, ["Instances"]):
-                        instance_type = compute_resources["Instances"][0]["InstanceType"]
-                        compute_resources.pop("Instances")
-                        compute_resources["InstanceType"] = instance_type
-
-    # Force addition of ElasticIp as True for Multi Nic instance
-    if request.config.getoption("force_elastic_ip"):
-        if not dict_has_nested_key(config_content, ("HeadNode", "Networking", "ElasticIp")):
-            dict_add_nested_key(config_content, "true", ("HeadNode", "Networking", "ElasticIp"))
-        elif dict_has_nested_key(config_content, ("HeadNode", "Networking", "ElasticIp")):
-            dict_add_nested_key(config_content, "true", ("HeadNode", "Networking", "ElasticIp"))
 
     with open(cluster_config, "w", encoding="utf-8") as conf_file:
         yaml.dump(config_content, conf_file)
