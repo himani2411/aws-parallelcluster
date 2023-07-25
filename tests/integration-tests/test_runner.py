@@ -89,6 +89,8 @@ TEST_DEFAULTS = {
     "cluster_custom_resource_service_token": None,
     "resource_bucket": None,
     "lambda_layer_source": None,
+    "force_run_instances": False,
+    "force_elastic_ip": False,
 }
 
 
@@ -402,6 +404,20 @@ def _init_argparser():
         default=TEST_DEFAULTS.get("external_shared_storage_stack_name"),
     )
 
+    debug_group.add_argument(
+        "--force-run-instances",
+        help="Force the usage of EC2 run-instances boto3 API instead of create-fleet for compute fleet scaling up."
+        "Note: If there are multiple instances in the list, only the first will be used.",
+        default=TEST_DEFAULTS.get("force_run_instances"),
+        action="store_true",
+    )
+    debug_group.add_argument(
+        "--force-elastic-ip",
+        help="Force the usage of Elastic IP for Multi network interface EC2 instances",
+        default=TEST_DEFAULTS.get("force_elastic_ip"),
+        action="store_true",
+    )
+
     return parser
 
 
@@ -432,13 +448,16 @@ def _is_url(value):
         raise argparse.ArgumentTypeError("'{0}' is not a valid url".format(value))
 
 
-def _test_config_file(value):
-    _is_file(value)
+def _test_config_file(config_file_path, config_args=None):
+    _is_file(config_file_path)
     try:
-        config = read_config_file(value)
+        if config_args:
+            config = read_config_file(config_file_path, **config_args)
+        else:
+            config = read_config_file(config_file_path)
         return config
     except Exception:
-        raise argparse.ArgumentTypeError("'{0}' is not a valid test config".format(value))
+        raise argparse.ArgumentTypeError("'{0}' is not a valid test config".format(config_file_path))
 
 
 def _join_with_not(args):
@@ -529,6 +548,7 @@ def _get_pytest_args(args, regions, log_file, out_dir):  # noqa: C901
     _set_custom_stack_args(args, pytest_args)
     _set_api_args(args, pytest_args)
     _set_custom_resource_args(args, pytest_args)
+    _set_validate_instance_type_args(args, pytest_args)
 
     return pytest_args
 
@@ -583,6 +603,9 @@ def _set_custom_stack_args(args, pytest_args):
     if args.no_delete:
         pytest_args.append("--no-delete")
 
+    if args.force_run_instances:
+        pytest_args.append("--force-run-instances")
+
     if args.iam_user_role_stack_name:
         pytest_args.extend(["--iam-user-role-stack-name", args.iam_user_role_stack_name])
 
@@ -597,6 +620,11 @@ def _set_custom_stack_args(args, pytest_args):
 
     if args.external_shared_storage_stack_name:
         pytest_args.extend(["--external-shared-storage-stack-name", args.external_shared_storage_stack_name])
+
+
+def _set_validate_instance_type_args(args, pytest_args):
+    if args.force_elastic_ip:
+        pytest_args.append("--force-elastic-ip")
 
 
 def _set_custom_resource_args(args, pytest_args):
@@ -688,6 +716,17 @@ def _run_parallel(args):
         job.join()
 
 
+def _get_config_arguments(args):
+    test_config_args = {}
+    if args.instances:
+        test_config_args["INSTANCES"] = args.instances[0]
+    if args.regions:
+        test_config_args["REGIONS"] = args.regions[0]
+    if args.oss:
+        test_config_args["OSS"] = args.oss[0]
+    return test_config_args
+
+
 def _check_args(args):
     # If --cluster is set only one os, scheduler, instance type and region can be provided
     if args.cluster:
@@ -705,7 +744,8 @@ def _check_args(args):
         assert_that(args.schedulers).described_as("--schedulers cannot be empty").is_not_empty()
     else:
         try:
-            args.tests_config = _test_config_file(args.tests_config)
+            test_config_args = _get_config_arguments(args)
+            args.tests_config = _test_config_file(args.tests_config, test_config_args)
             assert_valid_config(args.tests_config, args.tests_root_dir)
             logger.info("Found valid config file:\n%s", dump_rendered_config_file(args.tests_config))
         except Exception:
