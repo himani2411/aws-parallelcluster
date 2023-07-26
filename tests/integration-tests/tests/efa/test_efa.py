@@ -104,6 +104,7 @@ def test_efa(
             scheduler_commands,
             test_datadir,
             slots_per_instance,
+            region,
             partition="efa-enabled",
         )
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
@@ -203,8 +204,13 @@ def _test_osu_benchmarks_collective(
 
 
 def _test_osu_benchmarks_multiple_bandwidth(
-    instance, remote_command_executor, scheduler_commands, test_datadir, slots_per_instance, partition=None
+    instance, remote_command_executor, scheduler_commands, test_datadir, slots_per_instance, region, partition=None
 ):
+    # TODO: Remove imports
+    import json
+
+    import boto3
+
     instance_bandwidth_dict = {
         # Expected bandwidth for p4d and p4de (4 * 100 Gbps NICS -> declared NetworkPerformance 400 Gbps):
         # OMPI 4.1.0: ~330Gbps = 41250MB/s with Placement Group
@@ -217,6 +223,11 @@ def _test_osu_benchmarks_multiple_bandwidth(
         "hpc6id.32xlarge": 23000,  # Equivalent to a theoretical maximum of a single 184Gbps card
         # 8 100 Gbps NICS -> declared NetworkPerformance 800 Gbps
         "trn1.32xlarge": 80000,  # Equivalent to a theoretical maximum of a single 640Gbps card
+        instance: int(
+            json.loads(
+                boto3.client("secretsmanager", region_name=region).get_secret_value(SecretId="HPC")["SecretString"]
+            ).get(instance)
+        ),
     }
     num_instances = 2
     run_individual_osu_benchmark(
