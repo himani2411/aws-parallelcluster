@@ -1,10 +1,10 @@
 {%- import 'common.jinja2' as common with context -%}
 ---
 test-suites:
-  cli_commands:
-    test_cli_commands.py::test_slurm_cli_commands:
+  dcv:
+    test_dcv.py::test_dcv_configuration:
       dimensions:
-        - regions: [ "ap-northeast-2" ]
-          instances: {{ common.INSTANCES_DEFAULT_X86 }}
-          oss: [ "ubuntu1804" ]
+        - regions: [ "use1-az5" ]
+          instances: ['p5.48xlarge']
+          oss: [ "alinux2" ]
           schedulers: [ "slurm" ]
