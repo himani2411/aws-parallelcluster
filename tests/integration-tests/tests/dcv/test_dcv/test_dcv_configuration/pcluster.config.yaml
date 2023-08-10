@@ -32,4 +32,4 @@ Scheduling:
           {% endif %}
       Networking:
         SubnetIds:
-          - {{ public_subnet_id }}
+          - {{ private_subnet_id }}
