@@ -731,6 +731,13 @@ def inject_additional_config_settings(  # noqa: C901
 
     configure_scheduler_plugin(scheduler_plugin_configuration, config_content)
 
+    # Force addition of ElasticIp as True for Multi Nic instance
+    if request.config.getoption("force_elastic_ip"):
+        if not dict_has_nested_key(config_content, ("HeadNode", "Networking", "ElasticIp")):
+            dict_add_nested_key(config_content, "true", ("HeadNode", "Networking", "ElasticIp"))
+        elif dict_has_nested_key(config_content, ("HeadNode", "Networking", "ElasticIp")):
+            dict_add_nested_key(config_content, "true", ("HeadNode", "Networking", "ElasticIp"))
+
     with open(cluster_config, "w", encoding="utf-8") as conf_file:
         yaml.dump(config_content, conf_file)
 
