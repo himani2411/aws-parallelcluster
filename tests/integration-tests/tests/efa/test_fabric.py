@@ -74,7 +74,11 @@ def _execute_fabtests(remote_command_executor, test_datadir, instance):
     )
 
     logging.info("Running Fabtests")
-    test_cases = FABTESTS_BASIC_TESTS + FABTESTS_GDRCOPY_TESTS if instance == "p4d.24xlarge" else FABTESTS_BASIC_TESTS
+    test_cases = (
+        FABTESTS_BASIC_TESTS + FABTESTS_GDRCOPY_TESTS
+        if instance in ["p4d.24xlarge", "p5.48xlarge"]
+        else FABTESTS_BASIC_TESTS
+    )
     remote_command_executor.run_remote_script(
         str(test_datadir / "run-fabtests.sh"),
         args=[
@@ -85,7 +89,7 @@ def _execute_fabtests(remote_command_executor, test_datadir, instance):
             "q1-st-efa-enabled-1",
             "q1-st-efa-enabled-2",
             ",".join(test_cases),
-            "enable-gdr" if instance == "p4d.24xlarge" else "skip-gdr",
+            "enable-gdr" if instance in ["p4d.24xlarge", "p5.48xlarge"] else "skip-gdr",
         ],
         timeout=60,
         pty=False,
