@@ -111,7 +111,7 @@ def test_slurm(
         instance_type=gpu_instance_type,
         max_count=5,
         gpu_per_instance=_get_num_gpus_on_instance(gpu_instance_type_info),
-        gpu_type="H100s",
+        gpu_type="H100",
     )
     # Test torque command wrapper
     _test_torque_job_submit(remote_command_executor, test_datadir)
