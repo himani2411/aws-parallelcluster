@@ -625,16 +625,16 @@ def inject_additional_config_settings(cluster_config, request, region, benchmark
     with open(cluster_config, encoding="utf-8") as conf_file:
         config_content = yaml.safe_load(conf_file)
 
-    if not dict_has_nested_key(config_content, ("HeadNode", "Ssh", "AllowedIps")):
-        # If the test is running in an EC2 instance limit SSH connection access from instance running the test
-        instance_ip = get_metadata("public-ipv4", raise_error=False)
-        if not instance_ip:
-            instance_ip = get_metadata("local-ipv4", raise_error=False)
-        if instance_ip:
-            logging.info(f"Limiting AllowedIps rule to IP: {instance_ip}")
-            dict_add_nested_key(config_content, f"{instance_ip}/32", ("HeadNode", "Ssh", "AllowedIps"))
-        else:
-            logging.info("Skipping AllowedIps rule because unable to find local and public IP for the instance.")
+    # if not dict_has_nested_key(config_content, ("HeadNode", "Ssh", "AllowedIps")):
+    #     # If the test is running in an EC2 instance limit SSH connection access from instance running the test
+    #     instance_ip = get_metadata("public-ipv4", raise_error=False)
+    #     if not instance_ip:
+    #         instance_ip = get_metadata("local-ipv4", raise_error=False)
+    #     if instance_ip:
+    #         logging.info(f"Limiting AllowedIps rule to IP: {instance_ip}")
+    #         dict_add_nested_key(config_content, f"{instance_ip}/32", ("HeadNode", "Ssh", "AllowedIps"))
+    #     else:
+    #         logging.info("Skipping AllowedIps rule because unable to find local and public IP for the instance.")
 
     if request.config.getoption("custom_chef_cookbook") and not dict_has_nested_key(
         config_content, ("DevSettings", "Cookbook", "ChefCookbook")
