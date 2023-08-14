@@ -7,4 +7,4 @@
 #SBATCH --output=runscript.out
 
 module load intelmpi
-mpirun -n 6 IMB-MPI1 Alltoall -npmin 2
+mpirun -x LD_LIBRARY_PATH= /opt/amazon/libfabric/lib:$LD_LIBRARY_PATH -n 6 IMB-MPI1 Alltoall -npmin 2
