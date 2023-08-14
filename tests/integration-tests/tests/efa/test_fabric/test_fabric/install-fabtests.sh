@@ -21,7 +21,8 @@ mkdir -p $FABTESTS_SOURCES_DIR
 cd $FABTESTS_SOURCES_DIR
 git clone $FABTESTS_REPO
 cd libfabric
-git reset --hard $FABTESTS_COMMIT
+git checkout v1.18.x
+#git reset --hard $FABTESTS_COMMIT
 cd fabtests
 ./autogen.sh
 ./configure --with-libfabric=$LIBFABRIC_DIR --with-cuda=$CUDA_DIR --prefix=$FABTESTS_DIR && make -j 32 && make install
