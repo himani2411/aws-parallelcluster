@@ -12,6 +12,7 @@ mpirun \
 -x LD_LIBRARY_PATH=/shared/openmpi/nccl-${NCCL_VERSION}/build/lib/:/shared/openmpi/ofi-plugin/lib/:$LD_LIBRARY_PATH \
 -x RDMAV_FORK_SAFE=1 \
 -x NCCL_ALGO=ring \
+-x NCCL_NVLS_ENABLE=1 \
 -x NCCL_DEBUG=WARNING \
 -x NCCL_PROTO=simple \
 --mca pml ^cm --mca btl tcp,self --mca btl_tcp_if_exclude lo,docker0 --bind-to none \

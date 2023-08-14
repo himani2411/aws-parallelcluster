@@ -256,7 +256,8 @@ def _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark
     metric_namespace = "ParallelCluster/test_efa"
     for packet_size, value in re.findall(r"(\d+)\s+(\d+)\.", output):
         with open(
-            str(test_datadir / "osu_benchmarks" / "results" / "c5n.18xlarge" / mpi_version / benchmark_name), encoding="utf-8"
+            str(test_datadir / "osu_benchmarks" / "results" / "c5n.18xlarge" / mpi_version / benchmark_name),
+            encoding="utf-8",
         ) as result:
             previous_result = re.search(rf"{packet_size}\s+(\d+)\.", result.read()).group(1)
 
