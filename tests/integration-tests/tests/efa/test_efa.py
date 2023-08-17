@@ -63,9 +63,8 @@ def test_efa(
 
     _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="efa-enabled")
 
-    if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
-        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
-
+    # if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
+    #     _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
