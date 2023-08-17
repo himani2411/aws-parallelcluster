@@ -8,4 +8,4 @@ module load openmpi
 
 env
 
-mpirun --timeout 100 -np 2 --map-by ppr:1:node /shared/openmpi/osu-micro-benchmarks-${OSU_BENCHMARK_VERSION}/mpi/pt2pt/${BENCHMARK_NAME} > /shared/${BENCHMARK_NAME}.out
+mpirun -np 2 --map-by ppr:1:node /shared/openmpi/osu-micro-benchmarks-${OSU_BENCHMARK_VERSION}/mpi/pt2pt/${BENCHMARK_NAME} > /shared/${BENCHMARK_NAME}.out
