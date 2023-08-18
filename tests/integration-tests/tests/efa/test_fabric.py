@@ -45,21 +45,24 @@ def test_fabric(
     cluster = clusters_factory(cluster_config)
     remote_command_executor = RemoteCommandExecutor(cluster)
 
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="q1")
-
     fabtests_report = _execute_fabtests(remote_command_executor, test_datadir, instance)
+    for test_count in range(len(fabtests_report.get("testsuites", {}).get("testsuite", {}))):
+        num_tests = int(fabtests_report.get("testsuites", {}).get("testsuite", {})[test_count].get("@tests", None))
+        num_failures = int(
+            fabtests_report.get("testsuites", {}).get("testsuite", {})[test_count].get("@failures", None)
+        )
 
-    num_tests = int(fabtests_report.get("testsuites", {}).get("testsuite", {}).get("@tests", None))
-    num_failures = int(fabtests_report.get("testsuites", {}).get("testsuite", {}).get("@failures", None))
+        assert_that(num_tests, description="Cannot read number of tests from Fabtests report").is_not_none()
+        assert_that(num_failures, description="Cannot read number of failures from Fabtests report").is_not_none()
 
-    assert_that(num_tests, description="Cannot read number of tests from Fabtests report").is_not_none()
-    assert_that(num_failures, description="Cannot read number of failures from Fabtests report").is_not_none()
+        if num_failures > 0:
+            logging.info(f"Fabtests report:\n{fabtests_report}")
 
-    if num_failures > 0:
-        logging.info(f"Fabtests report:\n{fabtests_report}")
+        assert_that(num_failures, description=f"{num_failures}/{num_tests} libfabric tests are failing").is_equal_to(0)
 
-    assert_that(num_failures, description=f"{num_failures}/{num_tests} libfabric tests are failing").is_equal_to(0)
     assert_no_errors_in_logs(remote_command_executor, scheduler)
+
+    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="q1")
 
 
 def _execute_fabtests(remote_command_executor, test_datadir, instance):

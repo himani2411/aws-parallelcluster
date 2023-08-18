@@ -1,7 +1,7 @@
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: c5n.9xlarge
+  InstanceType: {{ instance }}
   Networking:
     SubnetId: {{ public_subnet_id }}
     {% if instance == "p4d.24xlarge" %}ElasticIp: true{% endif %}
@@ -15,7 +15,7 @@ Scheduling:
     - Name: q1
       Networking:
         PlacementGroup:
-          Enabled: {% if instance != "p4d.24xlarge" %}true{% else %}false{% endif %}
+          Enabled: {% if instance not in ["p4d.24xlarge","p5.48xlarge"]  %}true{% else %}false{% endif %}
         SubnetIds:
           - {{ private_subnet_id }}
       ComputeResources:
