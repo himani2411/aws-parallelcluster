@@ -45,7 +45,7 @@ def test_fabric(
     cluster = clusters_factory(cluster_config)
     remote_command_executor = RemoteCommandExecutor(cluster)
 
-    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="q1")
+    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="q1")
 
     fabtests_report = _execute_fabtests(remote_command_executor, test_datadir, instance)
     for test_count in range(len(fabtests_report.get("testsuites", {}).get("testsuite", {}))):
