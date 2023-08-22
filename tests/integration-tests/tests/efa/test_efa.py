@@ -223,11 +223,6 @@ def _test_osu_benchmarks_multiple_bandwidth(
         "hpc6id.32xlarge": 23000,  # Equivalent to a theoretical maximum of a single 184Gbps card
         # 8 100 Gbps NICS -> declared NetworkPerformance 800 Gbps
         "trn1.32xlarge": 80000,  # Equivalent to a theoretical maximum of a single 640Gbps card
-        instance: int(
-            json.loads(
-                boto3.client("secretsmanager", region_name=region).get_secret_value(SecretId="HPC")["SecretString"]
-            ).get(instance)
-        ),
         # 32 100 Gbps NICS -> declared NetworkPerformance 3200 Gbps
         "p5.48xlarge": 400000,
     }
