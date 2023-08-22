@@ -62,13 +62,10 @@ def test_efa(
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
     _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="efa-enabled")
-
-    # if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
-    #     _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
-
+    _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="efa-enabled")
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
-    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
     if instance in osu_benchmarks_instances:
         benchmark_failures = []
@@ -112,7 +109,8 @@ def test_efa(
         )
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
 
-    _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="efa-enabled")
+    if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
+        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
     assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
