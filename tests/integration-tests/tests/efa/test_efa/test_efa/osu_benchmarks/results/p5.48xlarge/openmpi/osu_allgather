@@ -1,0 +1,336 @@
+[0] MPI startup(): Intel(R) MPI Library, Version 2021.9  Build 20230307 (id: d82b3071db)
+[0] MPI startup(): Copyright (C) 2003-2023 Intel Corporation.  All rights reserved.
+[0] MPI startup(): library kind: release
+[0] MPI startup(): libfabric version: 1.13.2rc1-impi
+[0] MPI startup(): max number of MPI_Request per vci: 67108864 (pools: 1)
+[0] MPI startup(): libfabric provider: efa
+[0] MPI startup(): File "" not found
+[0] MPI startup(): Load tuning file: "/opt/intel/mpi/2021.9.0/etc/tuning_generic_shm-ofi.dat"
+[0] MPI startup(): threading: mode: direct
+[0] MPI startup(): threading: vcis: 1
+[0] MPI startup(): threading: app_threads: -1
+[0] MPI startup(): threading: runtime: generic
+[0] MPI startup(): threading: progress_threads: 0
+[0] MPI startup(): threading: async_progress: 0
+[0] MPI startup(): threading: lock_level: global
+[0] MPI startup(): tag bits available: 30 (TAG_UB value: 1073741823) 
+[0] MPI startup(): source bits available: 30 (Maximal number of rank: 1073741823) 
+[0] MPI startup(): Rank    Pid      Node name                        Pin cpu
+[0] MPI startup(): 0       12687    efa-enabled-st-efa-enabled-i1-1  {0}
+[0] MPI startup(): 1       12688    efa-enabled-st-efa-enabled-i1-1  {1}
+[0] MPI startup(): 2       12689    efa-enabled-st-efa-enabled-i1-1  {2}
+[0] MPI startup(): 3       12690    efa-enabled-st-efa-enabled-i1-1  {3}
+[0] MPI startup(): 4       12691    efa-enabled-st-efa-enabled-i1-1  {4}
+[0] MPI startup(): 5       12692    efa-enabled-st-efa-enabled-i1-1  {5}
+[0] MPI startup(): 6       12693    efa-enabled-st-efa-enabled-i1-1  {6}
+[0] MPI startup(): 7       12694    efa-enabled-st-efa-enabled-i1-1  {7}
+[0] MPI startup(): 8       12695    efa-enabled-st-efa-enabled-i1-1  {8}
+[0] MPI startup(): 9       12696    efa-enabled-st-efa-enabled-i1-1  {9}
+[0] MPI startup(): 10      12697    efa-enabled-st-efa-enabled-i1-1  {10}
+[0] MPI startup(): 11      12698    efa-enabled-st-efa-enabled-i1-1  {11}
+[0] MPI startup(): 12      12699    efa-enabled-st-efa-enabled-i1-1  {12}
+[0] MPI startup(): 13      12700    efa-enabled-st-efa-enabled-i1-1  {13}
+[0] MPI startup(): 14      12701    efa-enabled-st-efa-enabled-i1-1  {14}
+[0] MPI startup(): 15      12702    efa-enabled-st-efa-enabled-i1-1  {15}
+[0] MPI startup(): 16      12703    efa-enabled-st-efa-enabled-i1-1  {16}
+[0] MPI startup(): 17      12704    efa-enabled-st-efa-enabled-i1-1  {17}
+[0] MPI startup(): 18      12705    efa-enabled-st-efa-enabled-i1-1  {18}
+[0] MPI startup(): 19      12706    efa-enabled-st-efa-enabled-i1-1  {19}
+[0] MPI startup(): 20      12707    efa-enabled-st-efa-enabled-i1-1  {20}
+[0] MPI startup(): 21      12708    efa-enabled-st-efa-enabled-i1-1  {21}
+[0] MPI startup(): 22      12709    efa-enabled-st-efa-enabled-i1-1  {22}
+[0] MPI startup(): 23      12710    efa-enabled-st-efa-enabled-i1-1  {23}
+[0] MPI startup(): 24      12711    efa-enabled-st-efa-enabled-i1-1  {24}
+[0] MPI startup(): 25      12712    efa-enabled-st-efa-enabled-i1-1  {25}
+[0] MPI startup(): 26      12713    efa-enabled-st-efa-enabled-i1-1  {26}
+[0] MPI startup(): 27      12714    efa-enabled-st-efa-enabled-i1-1  {27}
+[0] MPI startup(): 28      12715    efa-enabled-st-efa-enabled-i1-1  {28}
+[0] MPI startup(): 29      12716    efa-enabled-st-efa-enabled-i1-1  {29}
+[0] MPI startup(): 30      12717    efa-enabled-st-efa-enabled-i1-1  {30}
+[0] MPI startup(): 31      12718    efa-enabled-st-efa-enabled-i1-1  {31}
+[0] MPI startup(): 32      12719    efa-enabled-st-efa-enabled-i1-1  {32}
+[0] MPI startup(): 33      12720    efa-enabled-st-efa-enabled-i1-1  {33}
+[0] MPI startup(): 34      12721    efa-enabled-st-efa-enabled-i1-1  {34}
+[0] MPI startup(): 35      12722    efa-enabled-st-efa-enabled-i1-1  {35}
+[0] MPI startup(): 36      12723    efa-enabled-st-efa-enabled-i1-1  {36}
+[0] MPI startup(): 37      12724    efa-enabled-st-efa-enabled-i1-1  {37}
+[0] MPI startup(): 38      12725    efa-enabled-st-efa-enabled-i1-1  {38}
+[0] MPI startup(): 39      12726    efa-enabled-st-efa-enabled-i1-1  {39}
+[0] MPI startup(): 40      12727    efa-enabled-st-efa-enabled-i1-1  {40}
+[0] MPI startup(): 41      12728    efa-enabled-st-efa-enabled-i1-1  {41}
+[0] MPI startup(): 42      12729    efa-enabled-st-efa-enabled-i1-1  {42}
+[0] MPI startup(): 43      12730    efa-enabled-st-efa-enabled-i1-1  {43}
+[0] MPI startup(): 44      12731    efa-enabled-st-efa-enabled-i1-1  {44}
+[0] MPI startup(): 45      12732    efa-enabled-st-efa-enabled-i1-1  {45}
+[0] MPI startup(): 46      12733    efa-enabled-st-efa-enabled-i1-1  {46}
+[0] MPI startup(): 47      12734    efa-enabled-st-efa-enabled-i1-1  {47}
+[0] MPI startup(): 48      12735    efa-enabled-st-efa-enabled-i1-1  {48}
+[0] MPI startup(): 49      12736    efa-enabled-st-efa-enabled-i1-1  {49}
+[0] MPI startup(): 50      12737    efa-enabled-st-efa-enabled-i1-1  {50}
+[0] MPI startup(): 51      12738    efa-enabled-st-efa-enabled-i1-1  {51}
+[0] MPI startup(): 52      12739    efa-enabled-st-efa-enabled-i1-1  {52}
+[0] MPI startup(): 53      12740    efa-enabled-st-efa-enabled-i1-1  {53}
+[0] MPI startup(): 54      12741    efa-enabled-st-efa-enabled-i1-1  {54}
+[0] MPI startup(): 55      12742    efa-enabled-st-efa-enabled-i1-1  {55}
+[0] MPI startup(): 56      12743    efa-enabled-st-efa-enabled-i1-1  {56}
+[0] MPI startup(): 57      12744    efa-enabled-st-efa-enabled-i1-1  {57}
+[0] MPI startup(): 58      12745    efa-enabled-st-efa-enabled-i1-1  {58}
+[0] MPI startup(): 59      12746    efa-enabled-st-efa-enabled-i1-1  {59}
+[0] MPI startup(): 60      12747    efa-enabled-st-efa-enabled-i1-1  {60}
+[0] MPI startup(): 61      12748    efa-enabled-st-efa-enabled-i1-1  {61}
+[0] MPI startup(): 62      12749    efa-enabled-st-efa-enabled-i1-1  {62}
+[0] MPI startup(): 63      12750    efa-enabled-st-efa-enabled-i1-1  {63}
+[0] MPI startup(): 64      12751    efa-enabled-st-efa-enabled-i1-1  {64}
+[0] MPI startup(): 65      12752    efa-enabled-st-efa-enabled-i1-1  {65}
+[0] MPI startup(): 66      12753    efa-enabled-st-efa-enabled-i1-1  {66}
+[0] MPI startup(): 67      12754    efa-enabled-st-efa-enabled-i1-1  {67}
+[0] MPI startup(): 68      12755    efa-enabled-st-efa-enabled-i1-1  {68}
+[0] MPI startup(): 69      12756    efa-enabled-st-efa-enabled-i1-1  {69}
+[0] MPI startup(): 70      12757    efa-enabled-st-efa-enabled-i1-1  {70}
+[0] MPI startup(): 71      12758    efa-enabled-st-efa-enabled-i1-1  {71}
+[0] MPI startup(): 72      12759    efa-enabled-st-efa-enabled-i1-1  {72}
+[0] MPI startup(): 73      12760    efa-enabled-st-efa-enabled-i1-1  {73}
+[0] MPI startup(): 74      12761    efa-enabled-st-efa-enabled-i1-1  {74}
+[0] MPI startup(): 75      12762    efa-enabled-st-efa-enabled-i1-1  {75}
+[0] MPI startup(): 76      12763    efa-enabled-st-efa-enabled-i1-1  {76}
+[0] MPI startup(): 77      12764    efa-enabled-st-efa-enabled-i1-1  {77}
+[0] MPI startup(): 78      12765    efa-enabled-st-efa-enabled-i1-1  {78}
+[0] MPI startup(): 79      12766    efa-enabled-st-efa-enabled-i1-1  {79}
+[0] MPI startup(): 80      12767    efa-enabled-st-efa-enabled-i1-1  {80}
+[0] MPI startup(): 81      12768    efa-enabled-st-efa-enabled-i1-1  {81}
+[0] MPI startup(): 82      12769    efa-enabled-st-efa-enabled-i1-1  {82}
+[0] MPI startup(): 83      12770    efa-enabled-st-efa-enabled-i1-1  {83}
+[0] MPI startup(): 84      12771    efa-enabled-st-efa-enabled-i1-1  {84}
+[0] MPI startup(): 85      12772    efa-enabled-st-efa-enabled-i1-1  {85}
+[0] MPI startup(): 86      12773    efa-enabled-st-efa-enabled-i1-1  {86}
+[0] MPI startup(): 87      12774    efa-enabled-st-efa-enabled-i1-1  {87}
+[0] MPI startup(): 88      12775    efa-enabled-st-efa-enabled-i1-1  {88}
+[0] MPI startup(): 89      12776    efa-enabled-st-efa-enabled-i1-1  {89}
+[0] MPI startup(): 90      12777    efa-enabled-st-efa-enabled-i1-1  {90}
+[0] MPI startup(): 91      12778    efa-enabled-st-efa-enabled-i1-1  {91}
+[0] MPI startup(): 92      12779    efa-enabled-st-efa-enabled-i1-1  {92}
+[0] MPI startup(): 93      12780    efa-enabled-st-efa-enabled-i1-1  {93}
+[0] MPI startup(): 94      12781    efa-enabled-st-efa-enabled-i1-1  {94}
+[0] MPI startup(): 95      12782    efa-enabled-st-efa-enabled-i1-1  {95}
+[0] MPI startup(): 96      12295    efa-enabled-st-efa-enabled-i1-2  {0}
+[0] MPI startup(): 97      12296    efa-enabled-st-efa-enabled-i1-2  {1}
+[0] MPI startup(): 98      12297    efa-enabled-st-efa-enabled-i1-2  {2}
+[0] MPI startup(): 99      12298    efa-enabled-st-efa-enabled-i1-2  {3}
+[0] MPI startup(): 100     12299    efa-enabled-st-efa-enabled-i1-2  {4}
+[0] MPI startup(): 101     12300    efa-enabled-st-efa-enabled-i1-2  {5}
+[0] MPI startup(): 102     12301    efa-enabled-st-efa-enabled-i1-2  {6}
+[0] MPI startup(): 103     12302    efa-enabled-st-efa-enabled-i1-2  {7}
+[0] MPI startup(): 104     12303    efa-enabled-st-efa-enabled-i1-2  {8}
+[0] MPI startup(): 105     12304    efa-enabled-st-efa-enabled-i1-2  {9}
+[0] MPI startup(): 106     12305    efa-enabled-st-efa-enabled-i1-2  {10}
+[0] MPI startup(): 107     12306    efa-enabled-st-efa-enabled-i1-2  {11}
+[0] MPI startup(): 108     12307    efa-enabled-st-efa-enabled-i1-2  {12}
+[0] MPI startup(): 109     12308    efa-enabled-st-efa-enabled-i1-2  {13}
+[0] MPI startup(): 110     12309    efa-enabled-st-efa-enabled-i1-2  {14}
+[0] MPI startup(): 111     12310    efa-enabled-st-efa-enabled-i1-2  {15}
+[0] MPI startup(): 112     12311    efa-enabled-st-efa-enabled-i1-2  {16}
+[0] MPI startup(): 113     12312    efa-enabled-st-efa-enabled-i1-2  {17}
+[0] MPI startup(): 114     12313    efa-enabled-st-efa-enabled-i1-2  {18}
+[0] MPI startup(): 115     12314    efa-enabled-st-efa-enabled-i1-2  {19}
+[0] MPI startup(): 116     12315    efa-enabled-st-efa-enabled-i1-2  {20}
+[0] MPI startup(): 117     12317    efa-enabled-st-efa-enabled-i1-2  {21}
+[0] MPI startup(): 118     12318    efa-enabled-st-efa-enabled-i1-2  {22}
+[0] MPI startup(): 119     12319    efa-enabled-st-efa-enabled-i1-2  {23}
+[0] MPI startup(): 120     12320    efa-enabled-st-efa-enabled-i1-2  {24}
+[0] MPI startup(): 121     12321    efa-enabled-st-efa-enabled-i1-2  {25}
+[0] MPI startup(): 122     12322    efa-enabled-st-efa-enabled-i1-2  {26}
+[0] MPI startup(): 123     12324    efa-enabled-st-efa-enabled-i1-2  {27}
+[0] MPI startup(): 124     12325    efa-enabled-st-efa-enabled-i1-2  {28}
+[0] MPI startup(): 125     12327    efa-enabled-st-efa-enabled-i1-2  {29}
+[0] MPI startup(): 126     12328    efa-enabled-st-efa-enabled-i1-2  {30}
+[0] MPI startup(): 127     12329    efa-enabled-st-efa-enabled-i1-2  {31}
+[0] MPI startup(): 128     12330    efa-enabled-st-efa-enabled-i1-2  {32}
+[0] MPI startup(): 129     12331    efa-enabled-st-efa-enabled-i1-2  {33}
+[0] MPI startup(): 130     12332    efa-enabled-st-efa-enabled-i1-2  {34}
+[0] MPI startup(): 131     12334    efa-enabled-st-efa-enabled-i1-2  {35}
+[0] MPI startup(): 132     12335    efa-enabled-st-efa-enabled-i1-2  {36}
+[0] MPI startup(): 133     12336    efa-enabled-st-efa-enabled-i1-2  {37}
+[0] MPI startup(): 134     12337    efa-enabled-st-efa-enabled-i1-2  {38}
+[0] MPI startup(): 135     12338    efa-enabled-st-efa-enabled-i1-2  {39}
+[0] MPI startup(): 136     12339    efa-enabled-st-efa-enabled-i1-2  {40}
+[0] MPI startup(): 137     12340    efa-enabled-st-efa-enabled-i1-2  {41}
+[0] MPI startup(): 138     12341    efa-enabled-st-efa-enabled-i1-2  {42}
+[0] MPI startup(): 139     12342    efa-enabled-st-efa-enabled-i1-2  {43}
+[0] MPI startup(): 140     12343    efa-enabled-st-efa-enabled-i1-2  {44}
+[0] MPI startup(): 141     12344    efa-enabled-st-efa-enabled-i1-2  {45}
+[0] MPI startup(): 142     12345    efa-enabled-st-efa-enabled-i1-2  {46}
+[0] MPI startup(): 143     12346    efa-enabled-st-efa-enabled-i1-2  {47}
+[0] MPI startup(): 144     12347    efa-enabled-st-efa-enabled-i1-2  {48}
+[0] MPI startup(): 145     12348    efa-enabled-st-efa-enabled-i1-2  {49}
+[0] MPI startup(): 146     12349    efa-enabled-st-efa-enabled-i1-2  {50}
+[0] MPI startup(): 147     12350    efa-enabled-st-efa-enabled-i1-2  {51}
+[0] MPI startup(): 148     12351    efa-enabled-st-efa-enabled-i1-2  {52}
+[0] MPI startup(): 149     12352    efa-enabled-st-efa-enabled-i1-2  {53}
+[0] MPI startup(): 150     12353    efa-enabled-st-efa-enabled-i1-2  {54}
+[0] MPI startup(): 151     12354    efa-enabled-st-efa-enabled-i1-2  {55}
+[0] MPI startup(): 152     12355    efa-enabled-st-efa-enabled-i1-2  {56}
+[0] MPI startup(): 153     12356    efa-enabled-st-efa-enabled-i1-2  {57}
+[0] MPI startup(): 154     12357    efa-enabled-st-efa-enabled-i1-2  {58}
+[0] MPI startup(): 155     12358    efa-enabled-st-efa-enabled-i1-2  {59}
+[0] MPI startup(): 156     12359    efa-enabled-st-efa-enabled-i1-2  {60}
+[0] MPI startup(): 157     12360    efa-enabled-st-efa-enabled-i1-2  {61}
+[0] MPI startup(): 158     12361    efa-enabled-st-efa-enabled-i1-2  {62}
+[0] MPI startup(): 159     12362    efa-enabled-st-efa-enabled-i1-2  {63}
+[0] MPI startup(): 160     12363    efa-enabled-st-efa-enabled-i1-2  {64}
+[0] MPI startup(): 161     12364    efa-enabled-st-efa-enabled-i1-2  {65}
+[0] MPI startup(): 162     12365    efa-enabled-st-efa-enabled-i1-2  {66}
+[0] MPI startup(): 163     12366    efa-enabled-st-efa-enabled-i1-2  {67}
+[0] MPI startup(): 164     12367    efa-enabled-st-efa-enabled-i1-2  {68}
+[0] MPI startup(): 165     12368    efa-enabled-st-efa-enabled-i1-2  {69}
+[0] MPI startup(): 166     12369    efa-enabled-st-efa-enabled-i1-2  {70}
+[0] MPI startup(): 167     12370    efa-enabled-st-efa-enabled-i1-2  {71}
+[0] MPI startup(): 168     12371    efa-enabled-st-efa-enabled-i1-2  {72}
+[0] MPI startup(): 169     12372    efa-enabled-st-efa-enabled-i1-2  {73}
+[0] MPI startup(): 170     12373    efa-enabled-st-efa-enabled-i1-2  {74}
+[0] MPI startup(): 171     12374    efa-enabled-st-efa-enabled-i1-2  {75}
+[0] MPI startup(): 172     12375    efa-enabled-st-efa-enabled-i1-2  {76}
+[0] MPI startup(): 173     12376    efa-enabled-st-efa-enabled-i1-2  {77}
+[0] MPI startup(): 174     12377    efa-enabled-st-efa-enabled-i1-2  {78}
+[0] MPI startup(): 175     12378    efa-enabled-st-efa-enabled-i1-2  {79}
+[0] MPI startup(): 176     12379    efa-enabled-st-efa-enabled-i1-2  {80}
+[0] MPI startup(): 177     12380    efa-enabled-st-efa-enabled-i1-2  {81}
+[0] MPI startup(): 178     12381    efa-enabled-st-efa-enabled-i1-2  {82}
+[0] MPI startup(): 179     12382    efa-enabled-st-efa-enabled-i1-2  {83}
+[0] MPI startup(): 180     12383    efa-enabled-st-efa-enabled-i1-2  {84}
+[0] MPI startup(): 181     12384    efa-enabled-st-efa-enabled-i1-2  {85}
+[0] MPI startup(): 182     12385    efa-enabled-st-efa-enabled-i1-2  {86}
+[0] MPI startup(): 183     12386    efa-enabled-st-efa-enabled-i1-2  {87}
+[0] MPI startup(): 184     12387    efa-enabled-st-efa-enabled-i1-2  {88}
+[0] MPI startup(): 185     12388    efa-enabled-st-efa-enabled-i1-2  {89}
+[0] MPI startup(): 186     12389    efa-enabled-st-efa-enabled-i1-2  {90}
+[0] MPI startup(): 187     12390    efa-enabled-st-efa-enabled-i1-2  {91}
+[0] MPI startup(): 188     12391    efa-enabled-st-efa-enabled-i1-2  {92}
+[0] MPI startup(): 189     12392    efa-enabled-st-efa-enabled-i1-2  {93}
+[0] MPI startup(): 190     12393    efa-enabled-st-efa-enabled-i1-2  {94}
+[0] MPI startup(): 191     12394    efa-enabled-st-efa-enabled-i1-2  {95}
+[0] MPI startup(): 192     13418    efa-enabled-st-efa-enabled-i1-3  {0}
+[0] MPI startup(): 193     13419    efa-enabled-st-efa-enabled-i1-3  {1}
+[0] MPI startup(): 194     13420    efa-enabled-st-efa-enabled-i1-3  {2}
+[0] MPI startup(): 195     13421    efa-enabled-st-efa-enabled-i1-3  {3}
+[0] MPI startup(): 196     13422    efa-enabled-st-efa-enabled-i1-3  {4}
+[0] MPI startup(): 197     13423    efa-enabled-st-efa-enabled-i1-3  {5}
+[0] MPI startup(): 198     13424    efa-enabled-st-efa-enabled-i1-3  {6}
+[0] MPI startup(): 199     13425    efa-enabled-st-efa-enabled-i1-3  {7}
+[0] MPI startup(): 200     13426    efa-enabled-st-efa-enabled-i1-3  {8}
+[0] MPI startup(): 201     13427    efa-enabled-st-efa-enabled-i1-3  {9}
+[0] MPI startup(): 202     13428    efa-enabled-st-efa-enabled-i1-3  {10}
+[0] MPI startup(): 203     13429    efa-enabled-st-efa-enabled-i1-3  {11}
+[0] MPI startup(): 204     13430    efa-enabled-st-efa-enabled-i1-3  {12}
+[0] MPI startup(): 205     13431    efa-enabled-st-efa-enabled-i1-3  {13}
+[0] MPI startup(): 206     13432    efa-enabled-st-efa-enabled-i1-3  {14}
+[0] MPI startup(): 207     13433    efa-enabled-st-efa-enabled-i1-3  {15}
+[0] MPI startup(): 208     13434    efa-enabled-st-efa-enabled-i1-3  {16}
+[0] MPI startup(): 209     13435    efa-enabled-st-efa-enabled-i1-3  {17}
+[0] MPI startup(): 210     13436    efa-enabled-st-efa-enabled-i1-3  {18}
+[0] MPI startup(): 211     13437    efa-enabled-st-efa-enabled-i1-3  {19}
+[0] MPI startup(): 212     13439    efa-enabled-st-efa-enabled-i1-3  {20}
+[0] MPI startup(): 213     13440    efa-enabled-st-efa-enabled-i1-3  {21}
+[0] MPI startup(): 214     13441    efa-enabled-st-efa-enabled-i1-3  {22}
+[0] MPI startup(): 215     13442    efa-enabled-st-efa-enabled-i1-3  {23}
+[0] MPI startup(): 216     13443    efa-enabled-st-efa-enabled-i1-3  {24}
+[0] MPI startup(): 217     13444    efa-enabled-st-efa-enabled-i1-3  {25}
+[0] MPI startup(): 218     13445    efa-enabled-st-efa-enabled-i1-3  {26}
+[0] MPI startup(): 219     13446    efa-enabled-st-efa-enabled-i1-3  {27}
+[0] MPI startup(): 220     13447    efa-enabled-st-efa-enabled-i1-3  {28}
+[0] MPI startup(): 221     13449    efa-enabled-st-efa-enabled-i1-3  {29}
+[0] MPI startup(): 222     13450    efa-enabled-st-efa-enabled-i1-3  {30}
+[0] MPI startup(): 223     13451    efa-enabled-st-efa-enabled-i1-3  {31}
+[0] MPI startup(): 224     13452    efa-enabled-st-efa-enabled-i1-3  {32}
+[0] MPI startup(): 225     13453    efa-enabled-st-efa-enabled-i1-3  {33}
+[0] MPI startup(): 226     13454    efa-enabled-st-efa-enabled-i1-3  {34}
+[0] MPI startup(): 227     13455    efa-enabled-st-efa-enabled-i1-3  {35}
+[0] MPI startup(): 228     13456    efa-enabled-st-efa-enabled-i1-3  {36}
+[0] MPI startup(): 229     13457    efa-enabled-st-efa-enabled-i1-3  {37}
+[0] MPI startup(): 230     13458    efa-enabled-st-efa-enabled-i1-3  {38}
+[0] MPI startup(): 231     13459    efa-enabled-st-efa-enabled-i1-3  {39}
+[0] MPI startup(): 232     13460    efa-enabled-st-efa-enabled-i1-3  {40}
+[0] MPI startup(): 233     13461    efa-enabled-st-efa-enabled-i1-3  {41}
+[0] MPI startup(): 234     13462    efa-enabled-st-efa-enabled-i1-3  {42}
+[0] MPI startup(): 235     13463    efa-enabled-st-efa-enabled-i1-3  {43}
+[0] MPI startup(): 236     13464    efa-enabled-st-efa-enabled-i1-3  {44}
+[0] MPI startup(): 237     13466    efa-enabled-st-efa-enabled-i1-3  {45}
+[0] MPI startup(): 238     13467    efa-enabled-st-efa-enabled-i1-3  {46}
+[0] MPI startup(): 239     13468    efa-enabled-st-efa-enabled-i1-3  {47}
+[0] MPI startup(): 240     13469    efa-enabled-st-efa-enabled-i1-3  {48}
+[0] MPI startup(): 241     13470    efa-enabled-st-efa-enabled-i1-3  {49}
+[0] MPI startup(): 242     13471    efa-enabled-st-efa-enabled-i1-3  {50}
+[0] MPI startup(): 243     13472    efa-enabled-st-efa-enabled-i1-3  {51}
+[0] MPI startup(): 244     13473    efa-enabled-st-efa-enabled-i1-3  {52}
+[0] MPI startup(): 245     13474    efa-enabled-st-efa-enabled-i1-3  {53}
+[0] MPI startup(): 246     13475    efa-enabled-st-efa-enabled-i1-3  {54}
+[0] MPI startup(): 247     13476    efa-enabled-st-efa-enabled-i1-3  {55}
+[0] MPI startup(): 248     13477    efa-enabled-st-efa-enabled-i1-3  {56}
+[0] MPI startup(): 249     13478    efa-enabled-st-efa-enabled-i1-3  {57}
+[0] MPI startup(): 250     13479    efa-enabled-st-efa-enabled-i1-3  {58}
+[0] MPI startup(): 251     13480    efa-enabled-st-efa-enabled-i1-3  {59}
+[0] MPI startup(): 252     13481    efa-enabled-st-efa-enabled-i1-3  {60}
+[0] MPI startup(): 253     13482    efa-enabled-st-efa-enabled-i1-3  {61}
+[0] MPI startup(): 254     13483    efa-enabled-st-efa-enabled-i1-3  {62}
+[0] MPI startup(): 255     13484    efa-enabled-st-efa-enabled-i1-3  {63}
+[0] MPI startup(): 256     13485    efa-enabled-st-efa-enabled-i1-3  {64}
+[0] MPI startup(): 257     13486    efa-enabled-st-efa-enabled-i1-3  {65}
+[0] MPI startup(): 258     13487    efa-enabled-st-efa-enabled-i1-3  {66}
+[0] MPI startup(): 259     13488    efa-enabled-st-efa-enabled-i1-3  {67}
+[0] MPI startup(): 260     13489    efa-enabled-st-efa-enabled-i1-3  {68}
+[0] MPI startup(): 261     13490    efa-enabled-st-efa-enabled-i1-3  {69}
+[0] MPI startup(): 262     13491    efa-enabled-st-efa-enabled-i1-3  {70}
+[0] MPI startup(): 263     13492    efa-enabled-st-efa-enabled-i1-3  {71}
+[0] MPI startup(): 264     13493    efa-enabled-st-efa-enabled-i1-3  {72}
+[0] MPI startup(): 265     13494    efa-enabled-st-efa-enabled-i1-3  {73}
+[0] MPI startup(): 266     13495    efa-enabled-st-efa-enabled-i1-3  {74}
+[0] MPI startup(): 267     13496    efa-enabled-st-efa-enabled-i1-3  {75}
+[0] MPI startup(): 268     13497    efa-enabled-st-efa-enabled-i1-3  {76}
+[0] MPI startup(): 269     13498    efa-enabled-st-efa-enabled-i1-3  {77}
+[0] MPI startup(): 270     13499    efa-enabled-st-efa-enabled-i1-3  {78}
+[0] MPI startup(): 271     13500    efa-enabled-st-efa-enabled-i1-3  {79}
+[0] MPI startup(): 272     13502    efa-enabled-st-efa-enabled-i1-3  {80}
+[0] MPI startup(): 273     13503    efa-enabled-st-efa-enabled-i1-3  {81}
+[0] MPI startup(): 274     13504    efa-enabled-st-efa-enabled-i1-3  {82}
+[0] MPI startup(): 275     13505    efa-enabled-st-efa-enabled-i1-3  {83}
+[0] MPI startup(): 276     13506    efa-enabled-st-efa-enabled-i1-3  {84}
+[0] MPI startup(): 277     13507    efa-enabled-st-efa-enabled-i1-3  {85}
+[0] MPI startup(): 278     13508    efa-enabled-st-efa-enabled-i1-3  {86}
+[0] MPI startup(): 279     13509    efa-enabled-st-efa-enabled-i1-3  {87}
+[0] MPI startup(): 280     13510    efa-enabled-st-efa-enabled-i1-3  {88}
+[0] MPI startup(): 281     13511    efa-enabled-st-efa-enabled-i1-3  {89}
+[0] MPI startup(): 282     13512    efa-enabled-st-efa-enabled-i1-3  {90}
+[0] MPI startup(): 283     13513    efa-enabled-st-efa-enabled-i1-3  {91}
+[0] MPI startup(): 284     13514    efa-enabled-st-efa-enabled-i1-3  {92}
+[0] MPI startup(): 285     13515    efa-enabled-st-efa-enabled-i1-3  {93}
+[0] MPI startup(): 286     13516    efa-enabled-st-efa-enabled-i1-3  {94}
+[0] MPI startup(): 287     13517    efa-enabled-st-efa-enabled-i1-3  {95}
+[0] MPI startup(): I_MPI_ROOT=/opt/intel/mpi/2021.9.0
+[0] MPI startup(): I_MPI_MPIRUN=mpirun
+[0] MPI startup(): I_MPI_HYDRA_TOPOLIB=hwloc
+[0] MPI startup(): I_MPI_HYDRA_BOOTSTRAP=slurm
+[0] MPI startup(): I_MPI_INTERNAL_MEM_POLICY=default
+[0] MPI startup(): I_MPI_DEBUG=10
+
+# OSU MPI Allgather Latency Test v5.7.1
+# Size       Avg Latency(us)
+1                      95.32
+2                     104.47
+4                     117.10
+8                     153.96
+16                    248.90
+32                    159.67
+64                    849.85
+128                   772.00
+256                  1458.91
+512                   386.03
+1024                  864.63
+2048                 1520.54
+4096                 2974.91
+8192                12032.82
+16384               13398.98
+32768               16716.64
+65536               24510.11
+131072              40700.05
+262144              62891.12
+524288             121359.64
+1048576            235775.18
