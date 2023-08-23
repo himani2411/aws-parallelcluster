@@ -66,6 +66,8 @@ def test_efa(
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
     run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
+        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
     if instance in osu_benchmarks_instances:
         benchmark_failures = []
@@ -109,8 +111,6 @@ def test_efa(
         )
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
 
-    if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
-        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
     assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
@@ -162,9 +162,9 @@ def _test_osu_benchmarks_pt2pt(
             slots_per_instance,
             test_datadir,
         )
-        # failures = _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark_name, output)
-        # if failures > accepted_number_of_failures:
-        #     failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
+        failures = _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark_name, output)
+        if failures > accepted_number_of_failures:
+            failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
 
     return failed_benchmarks
 
@@ -196,9 +196,9 @@ def _test_osu_benchmarks_collective(
             test_datadir,
             timeout=24,
         )
-        # failures = _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark_name, output)
-        # if failures > accepted_number_of_failures:
-        #     failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
+        failures = _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark_name, output)
+        if failures > accepted_number_of_failures:
+            failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
 
     return failed_benchmarks
 
