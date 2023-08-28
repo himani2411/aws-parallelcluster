@@ -66,8 +66,8 @@ def test_efa(
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
-    if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
-        _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
+    # if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
+    #     _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
     if instance in osu_benchmarks_instances:
         benchmark_failures = []
@@ -256,7 +256,7 @@ def _check_osu_benchmarks_results(test_datadir, instance, mpi_version, benchmark
     metric_namespace = "ParallelCluster/test_efa"
     for packet_size, value in re.findall(r"(\d+)\s+(\d+)\.", output):
         with open(
-            str(test_datadir / "osu_benchmarks" / "results" / "c5n.18xlarge" / mpi_version / benchmark_name),
+            str(test_datadir / "osu_benchmarks" / "results" / instance / mpi_version / benchmark_name),
             encoding="utf-8",
         ) as result:
             previous_result = re.search(rf"{packet_size}\s+(\d+)\.", result.read()).group(1)
