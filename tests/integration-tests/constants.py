@@ -12,7 +12,7 @@ from enum import Enum
 
 SCHEDULERS_SUPPORTING_IMDS_SECURED = ["slurm"]
 
-OSU_BENCHMARK_VERSION = "5.7.1"
+OSU_BENCHMARK_VERSION = "5.8"
 
 
 class NodeType(Enum):

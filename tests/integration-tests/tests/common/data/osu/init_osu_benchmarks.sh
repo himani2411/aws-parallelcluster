@@ -25,5 +25,5 @@ cp "./config.sub" "${OSU_BENCHMARKS_INSTALLATION_DIR}"
 
 # Compile OSU benchmarks
 cd "${OSU_BENCHMARKS_INSTALLATION_DIR}"
-./configure CC=$(which mpicc) CXX=$(which mpicxx)
+./configure CC=$(which mpicc) CXX=$(which mpicxx) --with-cuda=/usr/local/cuda --enable-cuda
 make
