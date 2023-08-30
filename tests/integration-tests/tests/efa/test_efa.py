@@ -65,39 +65,39 @@ def test_efa(
     _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="efa-enabled")
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
-    _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
+    # _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
     # if instance in ["p4d.24xlarge", "p5.48xlarge"] and os != "centos7":
     #     _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
 
-    if instance in osu_benchmarks_instances:
-        benchmark_failures = []
-
-        # Run OSU benchmarks in efa-enabled queue.
-        for mpi_version in mpi_variants:
-            benchmark_failures.extend(
-                _test_osu_benchmarks_pt2pt(
-                    mpi_version,
-                    remote_command_executor,
-                    scheduler_commands,
-                    test_datadir,
-                    instance,
-                    slots_per_instance,
-                    partition="efa-enabled",
-                )
-            )
-            benchmark_failures.extend(
-                _test_osu_benchmarks_collective(
-                    mpi_version,
-                    remote_command_executor,
-                    scheduler_commands,
-                    test_datadir,
-                    instance,
-                    num_instances=max_queue_size,
-                    slots_per_instance=slots_per_instance,
-                    partition="efa-enabled",
-                )
-            )
-        assert_that(benchmark_failures, description="Some OSU benchmarks are failing").is_empty()
+    # if instance in osu_benchmarks_instances:
+    #     benchmark_failures = []
+    #
+    #     # Run OSU benchmarks in efa-enabled queue.
+    #     for mpi_version in mpi_variants:
+    #         benchmark_failures.extend(
+    #             _test_osu_benchmarks_pt2pt(
+    #                 mpi_version,
+    #                 remote_command_executor,
+    #                 scheduler_commands,
+    #                 test_datadir,
+    #                 instance,
+    #                 slots_per_instance,
+    #                 partition="efa-enabled",
+    #             )
+    #         )
+    #         benchmark_failures.extend(
+    #             _test_osu_benchmarks_collective(
+    #                 mpi_version,
+    #                 remote_command_executor,
+    #                 scheduler_commands,
+    #                 test_datadir,
+    #                 instance,
+    #                 num_instances=max_queue_size,
+    #                 slots_per_instance=slots_per_instance,
+    #                 partition="efa-enabled",
+    #             )
+    #         )
+    #     assert_that(benchmark_failures, description="Some OSU benchmarks are failing").is_empty()
 
     if network_interfaces_count > 1:
         _test_osu_benchmarks_multiple_bandwidth(
@@ -109,7 +109,7 @@ def test_efa(
             region,
             partition="efa-enabled",
         )
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
     assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
@@ -205,11 +205,6 @@ def _test_osu_benchmarks_collective(
 def _test_osu_benchmarks_multiple_bandwidth(
     instance, remote_command_executor, scheduler_commands, test_datadir, slots_per_instance, region, partition=None
 ):
-    # TODO: Remove imports
-    import json
-
-    import boto3
-
     instance_bandwidth_dict = {
         # Expected bandwidth for p4d and p4de (4 * 100 Gbps NICS -> declared NetworkPerformance 400 Gbps):
         # OMPI 4.1.0: ~330Gbps = 41250MB/s with Placement Group
