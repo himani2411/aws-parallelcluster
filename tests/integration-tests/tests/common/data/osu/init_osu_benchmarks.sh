@@ -6,7 +6,8 @@ MPI_VERSION=${1}
 OSU_BENCHMARKS_VERSION={{ osu_benchmark_version }}
 OSU_BENCHMARKS_PACKAGE_NAME="osu-micro-benchmarks-${OSU_BENCHMARKS_VERSION}"
 OSU_BENCHMARKS_INSTALLATION_DIR="/shared/${MPI_VERSION}/${OSU_BENCHMARKS_PACKAGE_NAME}/"
-
+PATH=/usr/local/cuda-12.2/bin:${PATH};
+LD_LIBRARY_PATH=/usr/local/cuda-12.2/lib64:${LD_LIBRARY_PATH}
 # If the compilation directory already exists, skip the compilation.
 [ -d "${OSU_BENCHMARKS_INSTALLATION_DIR}" ] && exit 0
 
