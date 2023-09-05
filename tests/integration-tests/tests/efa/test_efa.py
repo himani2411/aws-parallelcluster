@@ -332,6 +332,6 @@ def _test_nccl_benchmarks(remote_command_executor, test_datadir, mpi_module, sch
     max_bandwidth = remote_command_executor.run_remote_command(
         "cat /shared/nccl_tests.out | tail -4 | head -1 | awk '{print $11}'"
     ).stdout
-
+    logging.info("Max Bandwidth is ", max_bandwidth)
     # Expected bandwidth with 2 nodes, 8 tasks per node is about 27GB/s
     assert_that(float(max_bandwidth)).is_greater_than(26.0)
