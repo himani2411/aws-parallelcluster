@@ -51,8 +51,8 @@ bootcmd:
   - if [ "${DisableMultiThreadingManually}" = "true" ]; then for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | tr '-' ',' | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done; fi
 
 users:
-  - name: himani
-    sudo: False
+  - name: default
+    sudo: false
 
 package_update: false
 package_upgrade: false

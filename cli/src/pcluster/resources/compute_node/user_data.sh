@@ -52,7 +52,7 @@ bootcmd:
 
 users:
   - name: default
-    sudo: False
+    sudo: false
 
 package_update: false
 package_upgrade: false
