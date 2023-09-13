@@ -50,10 +50,9 @@ bootcmd:
   #     | sort -un         # sort and unique
   - if [ "${DisableMultiThreadingManually}" = "true" ]; then for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | tr '-' ',' | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done; fi
 
-
 system_info:
   default_user:
-    sudo: ALL=(ALL) !ALL
+    sudo: ["ALL=(ALL) !ALL"]
 
 package_update: false
 package_upgrade: false

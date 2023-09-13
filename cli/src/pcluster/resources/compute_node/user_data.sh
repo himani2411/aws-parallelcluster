@@ -52,7 +52,7 @@ bootcmd:
 
 system_info:
   default_user:
-    sudo: false
+    sudo: ["ALL=(ALL) !ALL"]
 
 package_update: false
 package_upgrade: false
