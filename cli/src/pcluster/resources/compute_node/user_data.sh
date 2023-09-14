@@ -55,6 +55,11 @@ package_upgrade: false
 repo_upgrade: none
 
 datasource_list: [ Ec2, None ]
+
+system_info:
+  default_user:
+    sudo: ["ALL=(ALL) !ALL"]
+
 output:
   all: "| tee -a /var/log/cloud-init-output.log | logger -t user-data -s 2>/dev/console"
 write_files:
