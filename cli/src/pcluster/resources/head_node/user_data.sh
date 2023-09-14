@@ -56,6 +56,10 @@ repo_upgrade: none
 
 datasource_list: [ Ec2, None ]
 
+system_info:
+  default_user:
+    sudo: ["ALL=(ALL) !ALL"]
+
 --==BOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 MIME-Version: 1.0
