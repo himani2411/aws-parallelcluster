@@ -56,7 +56,7 @@ cloudwatch_logging:
       # 2) run the test for all OSes with slurm
       - regions: ["ap-east-1"]
         instances: {{ common.INSTANCES_DEFAULT_ARM }}
-        oss: ["ubuntu2204", "rhel8"]
+        oss: ["ubuntu2204", "rocky8"]
         schedulers: ["slurm"]
       - regions: ["ap-east-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
@@ -126,7 +126,7 @@ create:
     dimensions:
       - regions: ["ca-central-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["alinux2"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_create.py::test_create_imds_secured:
     dimensions:
@@ -162,7 +162,7 @@ createami:
     dimensions:
       - regions: ["eu-west-3"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["ubuntu2204", "alinux2", "rhel8"]
+        oss: ["ubuntu2204", "alinux2", "rocky8"]
   test_createami.py::test_kernel4_build_image_run_cluster:
     dimensions:
       - regions: ["eu-south-1"]
@@ -189,7 +189,7 @@ monitoring:
     dimensions:
       - regions: ["ap-northeast-2"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["centos7"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_structured_log_events.py::test_custom_compute_action_failure:
     dimensions:
@@ -203,7 +203,7 @@ dcv:
       # DCV on GPU enabled instance
       - regions: ["use1-az6"]  # do not move, unless capacity reservation is moved as well
         instances: ["g4dn.2xlarge"]
-        oss: ["centos7"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
       # DCV on ARM + GPU
       - regions: ["use1-az6"]  # do not move, unless capacity reservation is moved as well
@@ -288,7 +288,7 @@ iam:
   test_iam_image.py::test_iam_roles:
     dimensions:
       - regions: ["eu-south-1"]
-        oss: ["alinux2"]
+        oss: ["rocky8"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
   test_iam.py::test_s3_read_write_resource:
     dimensions:
@@ -342,7 +342,7 @@ networking:
         schedulers: ["slurm"]
       - regions: ["cn-north-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["alinux2"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
       - regions: ["us-gov-west-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
@@ -364,7 +364,7 @@ networking:
     dimensions:
       - regions: ["eu-north-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["centos7"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_placement_group.py::test_placement_group:
     dimensions:
@@ -442,7 +442,7 @@ schedulers:
     dimensions:
       - regions: ["ca-central-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["alinux2"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_slurm.py::test_slurm_protected_mode:
     dimensions:
@@ -466,7 +466,7 @@ schedulers:
     dimensions:
       - regions: ["ap-east-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["ubuntu2004"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_slurm.py::test_slurm_memory_based_scheduling:
     dimensions:
@@ -514,7 +514,7 @@ schedulers:
     dimensions:
       - regions: ["af-south-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["alinux2"]
+        oss: ["rocky8"]
         schedulers: [ "slurm" ]
   test_slurm.py::test_slurm_custom_partitions:
     dimensions:
@@ -572,7 +572,7 @@ storage:
               collective: ["osu_alltoall"]
       - regions: ["eu-west-2"]
         instances: {{ common.INSTANCES_DEFAULT_ARM }}
-        oss: ["ubuntu2004"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
       - regions: ["cn-north-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
@@ -611,7 +611,7 @@ storage:
     dimensions:
       - regions: ["ca-central-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["centos7"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   # The checks performed in test_efs_same_az is similar to test_multiple_efs.
   # We should consider this when assigning dimensions to each test.
@@ -645,7 +645,7 @@ storage:
     dimensions:
       - regions: ["ap-south-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["ubuntu2004", "centos7"]
+        oss: ["ubuntu2004", "rocky8"]
         schedulers: ["slurm"]
       - regions: ["us-gov-east-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
@@ -667,7 +667,7 @@ storage:
     dimensions:
       - regions: ["us-east-2"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["rhel8"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
       - regions: ["cn-northwest-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
@@ -725,7 +725,7 @@ update:
     dimensions:
       - regions: ["ap-south-1"]
         instances: {{ common.INSTANCES_DEFAULT_X86 }}
-        oss: ["rhel8"]
+        oss: ["rocky8"]
         schedulers: ["slurm"]
   test_update.py::test_dynamic_file_systems_update:
     dimensions:
