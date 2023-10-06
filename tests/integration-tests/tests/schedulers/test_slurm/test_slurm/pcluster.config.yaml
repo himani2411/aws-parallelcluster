@@ -47,7 +47,7 @@ Scheduling:
 SharedStorage:
   - MountDir: /shared  # Test comment
     Name: name1
-    StorageType: Ebs
+    StorageType: Efs
 DevSettings:
   Timeouts:
     HeadNodeBootstrapTimeout: 1700
