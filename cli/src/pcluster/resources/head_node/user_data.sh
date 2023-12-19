@@ -56,6 +56,9 @@ repo_upgrade: none
 
 datasource_list: [ Ec2, None ]
 
+${DisableSudoAccessForDefaultUserConfig}
+
+
 --==BOUNDARY==
 Content-Type: text/x-shellscript; charset="us-ascii"
 MIME-Version: 1.0
