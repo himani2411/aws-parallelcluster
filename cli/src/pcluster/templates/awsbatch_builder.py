@@ -37,6 +37,7 @@ from pcluster.templates.cdk_builder_utils import (
     get_log_group_deletion_policy,
     get_queue_security_groups_full,
     get_shared_storage_ids_by_type,
+    get_user_data_content,
     to_comma_separated_string,
 )
 from pcluster.utils import get_http_tokens_setting
@@ -156,7 +157,10 @@ class AwsBatchConstruct(Construct):
             self.stack_scope,
             "PclusterComputeEnvironmentLaunchTemplate",
             launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
-                metadata_options=ec2.CfnLaunchTemplate.MetadataOptionsProperty(http_tokens=http_tokens)
+                metadata_options=ec2.CfnLaunchTemplate.MetadataOptionsProperty(http_tokens=http_tokens),
+                user_data=Fn.base64(get_user_data_content("../resources/login_node/user_data.sh"))
+                if self.config.is_default_user_sudo_access_enabled
+                else "",
             ),
         )
         return batch.CfnComputeEnvironment.LaunchTemplateSpecificationProperty(

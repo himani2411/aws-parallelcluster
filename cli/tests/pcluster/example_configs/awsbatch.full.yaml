@@ -120,3 +120,4 @@ DevSettings:
   NodePackage: https://nodepackage.url
   Timeouts:
     HeadNodeBootstrapTimeout: 1000  # Default 1800 (seconds)
+DisableSudoAccessForDefaultUser: True

@@ -347,7 +347,7 @@ def get_generated_template_and_cdk_assets(
 
 
 @pytest.mark.parametrize(
-    "config_file_name, lt_assertions",
+    "config_file_name, lt_assertions, disable_sudo_access_default_user, expected_cloud_config_for_default_user",
     [
         (
             "cluster-using-flexible-instance-types.yaml",
@@ -356,6 +356,8 @@ def get_generated_template_and_cdk_assets(
                 InstanceTypeLTAssertion(has_instance_type=False),
                 EbsLTAssertion(includes_ebs_optimized=False, is_ebs_optimized=None),
             ],
+            True,
+            "system_info:\n  default_user:\n    sudo:\n    - ALL=(ALL) !ALL\n",
         ),
         (
             "cluster-using-single-instance-type.yaml",
@@ -364,6 +366,8 @@ def get_generated_template_and_cdk_assets(
                 InstanceTypeLTAssertion(has_instance_type=True),
                 EbsLTAssertion(includes_ebs_optimized=True, is_ebs_optimized=True),
             ],
+            False,
+            "",
         ),
     ],
 )
@@ -371,11 +375,18 @@ def test_compute_launch_template_properties(
     mocker,
     config_file_name,
     lt_assertions,
+    disable_sudo_access_default_user,
+    expected_cloud_config_for_default_user,
+    pcluster_config_reader,
     test_datadir,
 ):
+    rendered_config_file = pcluster_config_reader(
+        config_file_name,
+        disable_sudo_access_default_user=disable_sudo_access_default_user,
+    )
     generated_template, cdk_assets = get_generated_template_and_cdk_assets(
         mocker,
-        config_file_name,
+        rendered_config_file,
         test_datadir,
     )
 
@@ -383,6 +394,12 @@ def test_compute_launch_template_properties(
 
     for lt_assertion in lt_assertions:
         lt_assertion.assert_lt_properties(asset_content, "LaunchTemplate64e1c3597ca4c326")
+    # Checking for DisableSudoAccessForDefaultUser
+    assert_that(
+        asset_content["Resources"]["LaunchTemplate64e1c3597ca4c326"]["Properties"]["LaunchTemplateData"]["UserData"][
+            "Fn::Base64"
+        ]["Fn::Sub"][1]["DisableSudoAccessForDefaultUserConfig"]
+    ).is_equal_to(expected_cloud_config_for_default_user)
 
 
 class LoginNodeLTAssertion:
@@ -421,7 +438,7 @@ class LoginNodeLTAssertion:
 
 
 @pytest.mark.parametrize(
-    "config_file_name, lt_assertions",
+    "config_file_name, lt_assertions, disable_sudo_access_default_user, expected_cloud_config_for_default_user",
     [
         (
             "test-login-nodes-stack.yaml",
@@ -436,6 +453,8 @@ class LoginNodeLTAssertion:
                 NetworkInterfaceLTAssertion(no_of_network_interfaces=3, subnet_id="subnet-12345678"),
                 InstanceTypeLTAssertion(has_instance_type=True),
             ],
+            True,
+            "system_info:\n  default_user:\n    sudo:\n    - ALL=(ALL) !ALL\n",
         ),
         (
             "test-login-nodes-stack-without-ssh.yaml",
@@ -450,6 +469,8 @@ class LoginNodeLTAssertion:
                 NetworkInterfaceLTAssertion(no_of_network_interfaces=3, subnet_id="subnet-12345678"),
                 InstanceTypeLTAssertion(has_instance_type=True),
             ],
+            False,
+            "",
         ),
         (
             "test-login-nodes-stack-with-custom-tags.yaml",
@@ -468,6 +489,8 @@ class LoginNodeLTAssertion:
                 NetworkInterfaceLTAssertion(no_of_network_interfaces=3, subnet_id="subnet-12345678"),
                 InstanceTypeLTAssertion(has_instance_type=True),
             ],
+            True,
+            "system_info:\n  default_user:\n    sudo:\n    - ALL=(ALL) !ALL\n",
         ),
     ],
 )
@@ -475,17 +498,31 @@ def test_login_nodes_launch_template_properties(
     mocker,
     config_file_name,
     lt_assertions,
+    disable_sudo_access_default_user,
+    expected_cloud_config_for_default_user,
+    pcluster_config_reader,
     test_datadir,
 ):
+    rendered_config_file = pcluster_config_reader(
+        config_file_name,
+        disable_sudo_access_default_user=disable_sudo_access_default_user,
+    )
     generated_template, cdk_assets = get_generated_template_and_cdk_assets(
         mocker,
-        config_file_name,
+        rendered_config_file,
         test_datadir,
     )
 
     asset_content = get_asset_content_with_resource_name(cdk_assets, "LaunchTemplate64e1c3597ca4c326")
     for lt_assertion in lt_assertions:
         lt_assertion.assert_lt_properties(asset_content, "LaunchTemplate64e1c3597ca4c326")
+
+    # Checking for DisableSudoAccessForDefaultUser
+    assert_that(
+        asset_content["Resources"]["LaunchTemplate64e1c3597ca4c326"]["Properties"]["LaunchTemplateData"]["UserData"][
+            "Fn::Base64"
+        ]["Fn::Sub"][1]["DisableSudoAccessForDefaultUserConfig"]
+    ).is_equal_to(expected_cloud_config_for_default_user)
 
 
 class AutoScalingGroupAssertion:
@@ -858,7 +895,8 @@ def _get_cfn_init_file_content(template, resource, file):
 
 @freeze_time("2021-01-01T01:01:01")
 @pytest.mark.parametrize(
-    "config_file_name, expected_instance_tags, expected_volume_tags",
+    "config_file_name, expected_instance_tags, expected_volume_tags,"
+    "disable_sudo_access_default_user, expected_cloud_config_for_default_user,",
     [
         (
             "slurm.full.yaml",
@@ -872,6 +910,8 @@ def _get_cfn_init_file_content(template, resource, file):
                 "String": "String",
                 "two": "two22",
             },
+            True,
+            "system_info:\n  default_user:\n    sudo:\n    - ALL=(ALL) !ALL\n",
         ),
         (
             "awsbatch.full.yaml",
@@ -885,10 +925,19 @@ def _get_cfn_init_file_content(template, resource, file):
                 "String": "String",
                 "two": "two22",
             },
+            True,
+            "system_info:\n  default_user:\n    sudo:\n    - ALL=(ALL) !ALL\n",
         ),
     ],
 )
-def test_head_node_tags_from_launch_template(mocker, config_file_name, expected_instance_tags, expected_volume_tags):
+def test_head_node_tags_from_launch_template(
+    mocker,
+    config_file_name,
+    expected_instance_tags,
+    expected_volume_tags,
+    disable_sudo_access_default_user,
+    expected_cloud_config_for_default_user,
+):
     mock_aws_api(mocker)
     mock_bucket(mocker)
     mock_bucket_object_utils(mocker)
@@ -915,6 +964,13 @@ def test_head_node_tags_from_launch_template(mocker, config_file_name, expected_
     )
     actual_volume_tags = {tag["Key"]: tag["Value"] for tag in volume_tags}
     assert_that(actual_volume_tags).is_equal_to(expected_volume_tags)
+
+    # Checking for DisableSudoAccessForDefaultUser
+    assert_that(
+        generated_template["Resources"]["HeadNodeLaunchTemplate"]["Properties"]["LaunchTemplateData"]["UserData"][
+            "Fn::Base64"
+        ]["Fn::Sub"][1]["DisableSudoAccessForDefaultUserConfig"]
+    ).is_equal_to(expected_cloud_config_for_default_user)
 
 
 @freeze_time("2021-01-01T01:01:01")

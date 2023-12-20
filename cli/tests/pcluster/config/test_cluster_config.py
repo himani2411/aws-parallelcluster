@@ -197,6 +197,7 @@ class TestBaseClusterConfig:
         return BaseClusterConfig(
             cluster_name="clustername",
             image=Image("alinux2"),
+            disable_sudo_access_default_user=True,
             head_node=HeadNode(
                 "c5.xlarge", HeadNodeNetworking("subnet"), local_storage=LocalStorage(root_volume=RootVolume(size=50))
             ),
@@ -510,6 +511,10 @@ class TestBaseClusterConfig:
 
     def test_get_instance_types_data(self, base_cluster_config):
         assert_that(base_cluster_config.get_instance_types_data()).is_equal_to({})
+
+    def test_is_default_user_sudo_access_enabled(self, base_cluster_config, base_slurm_cluster_config):
+        assert_that(base_cluster_config.is_default_user_sudo_access_enabled).is_equal_to(True)
+        assert_that(base_slurm_cluster_config.is_default_user_sudo_access_enabled).is_equal_to(False)
 
     @pytest.mark.parametrize(
         "queue_parameters, expected_result",
