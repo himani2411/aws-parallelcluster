@@ -14,12 +14,19 @@ from typing import List, Union
 
 import boto3
 from assertpy import assert_that, soft_assertions
+from constants import NodeType
 from remote_command_executor import RemoteCommandExecutor
 from retrying import RetryError, retry
 from time_utils import minutes, seconds
-from utils import get_cfn_resources, get_compute_nodes_count, get_compute_nodes_instance_ids
+from utils import (
+    get_cfn_resources,
+    get_compute_nodes_count,
+    get_compute_nodes_instance_ids,
+    get_compute_nodes_instance_ips,
+)
 
 from tests.common.scaling_common import get_compute_nodes_allocation
+from tests.common.utils import reboot_head_node, reboot_login_node
 
 
 @retry(wait_fixed=seconds(20), stop_max_delay=minutes(5))
@@ -247,6 +254,43 @@ def assert_aws_identity_access_is_correct(cluster, users_allow_list, remote_comm
         logging.info(f"user={user} and result.failed={result.failed}")
         logging.info(f"user={user} and result.stdout={result.stdout}")
         assert_that(result.failed).is_equal_to(not allowed)
+
+
+def assert_default_user_has_desired_sudo_access(
+    cluster, node_type, disable_sudo_access_default_user, region, scheduler_commands_factory, reboot_nodes=False
+):
+    remote_command_executors = []
+    if reboot_nodes:
+        logging.info(f"Rebooting nodes in the cluster {cluster.name}")
+        scheduler_commands = scheduler_commands_factory(RemoteCommandExecutor(cluster))
+        reboot_head_node(cluster)
+        reboot_login_node(cluster)
+        for partition in scheduler_commands.get_partitions():
+            compute_nodes = scheduler_commands.get_compute_nodes(filter_by_partition=partition)
+            logging.info(f"Rebooting compute nodes: {compute_nodes} in partition {partition}")
+            for compute_node in compute_nodes:
+                scheduler_commands.reboot_compute_node(compute_node, asap=False)
+            scheduler_commands.wait_nodes_status("idle", compute_nodes)
+            logging.info(f"Compute nodes in partition {partition} now IDLE: {compute_nodes}")
+
+    logging.info(
+        f"Asserting sudo access is {'disabled' if disable_sudo_access_default_user else 'enabled'} "
+        + f"for default user in node {node_type.value}"
+    )
+    if node_type == NodeType.HEAD_NODE:
+        remote_command_executors.append(RemoteCommandExecutor(cluster))
+    elif node_type == NodeType.COMPUTE_NODES:
+        for compute_node_ip in get_compute_nodes_instance_ips(cluster.name, region):
+            remote_command_executors.append(RemoteCommandExecutor(cluster, compute_node_ip=compute_node_ip))
+    elif node_type == NodeType.LOGIN_NODES:
+        remote_command_executors.append(RemoteCommandExecutor(cluster, use_login_node=True))
+
+    command = "sudo cat /etc/sudoers.d/90-cloud-init-users"
+    for node_index, remote_command_executor in enumerate(remote_command_executors):
+        result = remote_command_executor.run_remote_command(command, raise_on_error=False)
+        logging.info(f"Default user in {node_type} number {node_index} and result.failed={result.failed}")
+        logging.info(f"Default user in {node_type}  number {node_index} and result.stdout={result.stdout}")
+        assert_that(result.failed).is_equal_to(disable_sudo_access_default_user)
 
 
 def assert_lambda_vpc_settings_are_correct(stack_name, region, security_group_ids, subnet_ids):
