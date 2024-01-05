@@ -13,6 +13,9 @@ Scheduling:
   Scheduler: {{ scheduler }}
   SlurmQueues:
     - Name: q1
+      CustomActions: # New section
+        OnNodeStart:
+          Script: https://raw.githubusercontent.com/himani2411/aws-parallelcluster/release-3.7.2/tests/integration-tests/tests/efa/test_fabric/test_fabric/openrm_install.sh
       Networking:
         PlacementGroup:
           Enabled: {% if instance != "p4d.24xlarge" %}true{% else %}false{% endif %}
