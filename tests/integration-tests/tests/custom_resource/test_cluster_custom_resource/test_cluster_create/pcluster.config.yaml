@@ -6,7 +6,7 @@ Tags:
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: {{ instance }}
+  InstanceType: p3.2xlarge
   Networking:
     SubnetId: {{ public_subnet_id }}
 Scheduling:

@@ -122,6 +122,7 @@ def get_custom_resource_template(cluster_config_path, cluster_custom_resource_te
     with open(cluster_config_path, encoding="utf-8") as cluster_config:
         template.resources["PclusterCluster"].properties["ClusterConfiguration"] = yaml.safe_load(cluster_config.read())
     template.resources["PclusterCluster"].properties["DeletionPolicy"] = deletion_policy
+    template.resources["PclusterCluster"].properties["SuppressValidators"] = ["ALL"]
     return template
 
 
