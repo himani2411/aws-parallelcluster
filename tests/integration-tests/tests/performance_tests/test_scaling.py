@@ -8,7 +8,7 @@ from assertpy import assert_that, soft_assertions
 from benchmarks.common.metrics_reporter import produce_benchmark_metrics_report
 from remote_command_executor import RemoteCommandExecutor
 from time_utils import minutes
-from utils import disable_protected_mode
+from utils import disable_protected_mode, wait_for_computefleet_changed
 
 from tests.common.assertions import assert_no_msg_in_logs
 from tests.common.scaling_common import get_bootstrap_errors, get_scaling_metrics, validate_and_get_scaling_test_config
@@ -16,7 +16,7 @@ from tests.common.scaling_common import get_bootstrap_errors, get_scaling_metric
 
 @pytest.mark.parametrize(
     "max_nodes",
-    [1000],
+    [2000],
 )
 def test_scaling(
     vpc_stack,
@@ -37,31 +37,40 @@ def test_scaling(
 
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
+    for i in range(10):
+        logging.info(f"Submitting an array of {max_nodes} jobs on {max_nodes} nodes")
+        before_time = datetime.datetime.now()
+        job_id = scheduler_commands.submit_command_and_assert_job_accepted(
+            submit_command_args={
+                "command": "srun sleep 10",
+                "partition": "queue-0",
+                "nodes": max_nodes,
+                "slots": max_nodes,
+            }
+        )
 
-    logging.info(f"Submitting an array of {max_nodes} jobs on {max_nodes} nodes")
-    job_id = scheduler_commands.submit_command_and_assert_job_accepted(
-        submit_command_args={
-            "command": "srun sleep 10",
-            "partition": "queue-0",
-            "nodes": max_nodes,
-            "slots": max_nodes,
-        }
-    )
+        logging.info(f"Waiting for job to be running: {job_id}")
+        scheduler_commands.wait_job_running(job_id)
+        after_time = datetime.datetime.now()
+        logging.info(f"Job starting time: {after_time - before_time}")
+        logging.info(f"Job {job_id} is running")
 
-    logging.info(f"Waiting for job to be running: {job_id}")
-    scheduler_commands.wait_job_running(job_id)
-    logging.info(f"Job {job_id} is running")
+        logging.info(f"Cancelling job: {job_id}")
+        scheduler_commands.cancel_job(job_id)
+        logging.info(f"Job {job_id} cancelled")
 
-    logging.info(f"Cancelling job: {job_id}")
-    scheduler_commands.cancel_job(job_id)
-    logging.info(f"Job {job_id} cancelled")
-
-    logging.info("Verifying no bootstrap errors in logs")
-    assert_no_msg_in_logs(
-        remote_command_executor,
-        log_files=["/var/log/parallelcluster/clustermgtd"],
-        log_msg=["Found the following bootstrap failure nodes"],
-    )
+        logging.info("Verifying no bootstrap errors in logs")
+        assert_no_msg_in_logs(
+            remote_command_executor,
+            log_files=["/var/log/parallelcluster/clustermgtd"],
+            log_msg=["Found the following bootstrap failure nodes"],
+        )
+        cluster.stop()
+        wait_for_computefleet_changed(cluster, "STOPPED")
+        time.sleep(15)
+        cluster.start()
+        wait_for_computefleet_changed(cluster, "RUNNING")
+        time.sleep(15)
 
 
 def _datetime_to_minute(dt: datetime):
