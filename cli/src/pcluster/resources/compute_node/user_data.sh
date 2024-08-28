@@ -97,8 +97,8 @@ write_files:
 
       [ -f /etc/parallelcluster/pcluster_cookbook_environment.sh ] && . /etc/parallelcluster/pcluster_cookbook_environment.sh
 
-      $CFN_BOOTSTRAP_VIRTUALENV_PATH/cfn-init -s ${AWS::StackName} -v -c deployFiles -r ${LaunchTemplateResourceId} --region ${AWS::Region} --url ${CloudFormationUrl} --role ${CfnInitRole} || error_exit 'Failed to bootstrap the compute node. Please check /var/log/cfn-init.log in the compute node or in CloudWatch logs. Please refer to https://docs.aws.amazon.com/parallelcluster/latest/ug/troubleshooting-v3.html#troubleshooting-v3-get-logs for more details on ParallelCluster logs.'
-
+      $CFN_BOOTSTRAP_VIRTUALENV_PATH/cfn-get-metadata -s ${AWS::StackName} -r ${LaunchTemplateResourceId} --region ${AWS::Region} --role ${CfnInitRole} --url ${CloudFormationUrl} -k AWS::CloudFormation::Init.deployConfigFiles.files | jq -r '."/tmp/dna.json".content' > /tmp/dna.json
+      $CFN_BOOTSTRAP_VIRTUALENV_PATH/cfn-get-metadata -s ${AWS::StackName} -r ${LaunchTemplateResourceId} --region ${AWS::Region} --role ${CfnInitRole} --url ${CloudFormationUrl} -k AWS::CloudFormation::Init.deployConfigFiles.files | jq -r '."/tmp/extra.json".content' > /tmp/extra.json
       [ -f /etc/profile.d/proxy.sh ] && . /etc/profile.d/proxy.sh
 
       [ -f /etc/profile.d/aws-cli-default-config.sh ] && . /etc/profile.d/aws-cli-default-config.sh
@@ -139,9 +139,11 @@ write_files:
         vendor_cookbook
       fi
       cd /tmp
+      mkdir -p /etc/chef/ohai/hints
+      touch /etc/chef/ohai/hints/ec2.json
 
       start=$(date +%s)
-
+      jq -s ".[0] * .[1]" /tmp/dna.json /tmp/extra.json > /etc/chef/dna.json || ( echo "jq not installed"; cp /tmp/dna.json /etc/chef/dna.json )
       {
         CINC_CMD="cinc-client --local-mode --config /etc/chef/client.rb --log_level info --logfile /var/log/chef-client.log --force-formatter --no-color --chef-zero-port 8889 --json-attributes /etc/chef/dna.json --override-runlist"
         FR_CMD="/opt/parallelcluster/scripts/fetch_and_run"
