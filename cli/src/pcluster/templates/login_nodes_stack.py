@@ -144,66 +144,6 @@ class Pool(Construct):
             instance_role_name = self._instance_role.ref
 
         launch_template_id = f"LoginNodeLaunchTemplate{create_hash_suffix(self._pool.name)}"
-        launch_template = ec2.CfnLaunchTemplate(
-            Stack.of(self),
-            launch_template_id,
-            launch_template_name=f"{self.stack_name}-{self._pool.name}",
-            launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
-                block_device_mappings=self._launch_template_builder.get_block_device_mappings(
-                    self._pool.local_storage.root_volume,
-                    AWSApi.instance().ec2.describe_image(self._config.login_nodes_ami[self._pool.name]).device_name,
-                ),
-                image_id=self._config.login_nodes_ami[self._pool.name],
-                instance_type=self._pool.instance_type,
-                key_name=self._pool.ssh.key_name,
-                metadata_options=ec2.CfnLaunchTemplate.MetadataOptionsProperty(
-                    http_tokens=get_http_tokens_setting(self._config.imds.imds_support)
-                ),
-                iam_instance_profile=ec2.CfnLaunchTemplate.IamInstanceProfileProperty(name=self._instance_profile),
-                user_data=Fn.base64(
-                    Fn.sub(
-                        get_user_data_content("../resources/login_node/user_data.sh"),
-                        {
-                            **{
-                                "Timeout": str(
-                                    get_attr(
-                                        self._config,
-                                        "dev_settings.timeouts.compute_node_bootstrap_timeout",
-                                        NODE_BOOTSTRAP_TIMEOUT,
-                                    )
-                                ),
-                                "AutoScalingGroupName": f"{self._login_nodes_stack_id}-AutoScalingGroup",
-                                "LaunchingLifecycleHookName": (
-                                    f"{self._login_nodes_stack_id}-LoginNodesLaunchingLifecycleHook"
-                                ),
-                                "LaunchTemplateResourceId": launch_template_id,
-                                "CloudFormationUrl": get_service_endpoint("cloudformation", self._config.region),
-                                "CfnInitRole": instance_role_name,
-                            },
-                            **get_common_user_data_env(self._pool, self._config),
-                        },
-                    )
-                ),
-                network_interfaces=login_nodes_pool_lt_nw_interface,
-                tag_specifications=[
-                    ec2.CfnLaunchTemplate.TagSpecificationProperty(
-                        resource_type="instance",
-                        tags=get_default_instance_tags(
-                            self.stack_name, self._config, self._pool, "LoginNode", self._shared_storage_infos
-                        )
-                        + [CfnTag(key=PCLUSTER_LOGIN_NODES_POOL_NAME_TAG, value=self._pool.name)]
-                        + get_custom_tags(self._config),
-                    ),
-                    ec2.CfnLaunchTemplate.TagSpecificationProperty(
-                        resource_type="volume",
-                        tags=get_default_volume_tags(self.stack_name, "LoginNode")
-                        + [CfnTag(key=PCLUSTER_LOGIN_NODES_POOL_NAME_TAG, value=self._pool.name)]
-                        + get_custom_tags(self._config),
-                    ),
-                ],
-            ),
-        )
-
         dna_json = json.dumps(
             {
                 "cluster": {
@@ -304,58 +244,85 @@ class Pool(Construct):
             indent=4,
         )
 
+        launch_template = ec2.CfnLaunchTemplate(
+            Stack.of(self),
+            launch_template_id,
+            launch_template_name=f"{self.stack_name}-{self._pool.name}",
+            launch_template_data=ec2.CfnLaunchTemplate.LaunchTemplateDataProperty(
+                block_device_mappings=self._launch_template_builder.get_block_device_mappings(
+                    self._pool.local_storage.root_volume,
+                    AWSApi.instance().ec2.describe_image(self._config.login_nodes_ami[self._pool.name]).device_name,
+                ),
+                image_id=self._config.login_nodes_ami[self._pool.name],
+                instance_type=self._pool.instance_type,
+                key_name=self._pool.ssh.key_name,
+                metadata_options=ec2.CfnLaunchTemplate.MetadataOptionsProperty(
+                    http_tokens=get_http_tokens_setting(self._config.imds.imds_support)
+                ),
+                iam_instance_profile=ec2.CfnLaunchTemplate.IamInstanceProfileProperty(name=self._instance_profile),
+                user_data=Fn.base64(
+                    Fn.sub(
+                        get_user_data_content("../resources/login_node/user_data.sh"),
+                        {
+                            **{
+                                "Timeout": str(
+                                    get_attr(
+                                        self._config,
+                                        "dev_settings.timeouts.compute_node_bootstrap_timeout",
+                                        NODE_BOOTSTRAP_TIMEOUT,
+                                    )
+                                ),
+                                "AutoScalingGroupName": f"{self._login_nodes_stack_id}-AutoScalingGroup",
+                                "LaunchingLifecycleHookName": (
+                                    f"{self._login_nodes_stack_id}-LoginNodesLaunchingLifecycleHook"
+                                ),
+                                "LaunchTemplateResourceId": launch_template_id,
+                                "CloudFormationUrl": get_service_endpoint("cloudformation", self._config.region),
+                                "CfnInitRole": instance_role_name,
+                                "DnaJson": dna_json,
+                                "ExtraJson": self._config.extra_chef_attributes,
+                            },
+                            **get_common_user_data_env(self._pool, self._config),
+                        },
+                    )
+                ),
+                network_interfaces=login_nodes_pool_lt_nw_interface,
+                tag_specifications=[
+                    ec2.CfnLaunchTemplate.TagSpecificationProperty(
+                        resource_type="instance",
+                        tags=get_default_instance_tags(
+                            self.stack_name, self._config, self._pool, "LoginNode", self._shared_storage_infos
+                        )
+                        + [CfnTag(key=PCLUSTER_LOGIN_NODES_POOL_NAME_TAG, value=self._pool.name)]
+                        + get_custom_tags(self._config),
+                    ),
+                    ec2.CfnLaunchTemplate.TagSpecificationProperty(
+                        resource_type="volume",
+                        tags=get_default_volume_tags(self.stack_name, "LoginNode")
+                        + [CfnTag(key=PCLUSTER_LOGIN_NODES_POOL_NAME_TAG, value=self._pool.name)]
+                        + get_custom_tags(self._config),
+                    ),
+                ],
+            ),
+        )
+
         cfn_init = {
             "configSets": {
-                "deployFiles": ["deployConfigFiles"],
-                "update": ["deployConfigFiles", "chefUpdate"],
+                "update": ["deployConfigFiles"],
             },
             "deployConfigFiles": {
                 "files": {
                     # A nosec comment is appended to the following line in order to disable the B108 check.
                     # The file is needed by the product
                     # [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
-                    "/tmp/dna.json": {  # nosec B108
-                        "content": dna_json,
+                    "/tmp/cluster-config-version.json": {  # nosec B108
+                        "content": self._config.config_version,
                         "mode": "000644",
                         "owner": "root",
                         "group": "root",
                         "encoding": "plain",
                     },
-                    # A nosec comment is appended to the following line in order to disable the B108 check.
-                    # The file is needed by the product
-                    # [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
-                    "/tmp/extra.json": {  # nosec B108
-                        "mode": "000644",
-                        "owner": "root",
-                        "group": "root",
-                        "content": self._config.extra_chef_attributes,
-                    },
                 },
-                "commands": {
-                    "mkdir": {"command": "mkdir -p /etc/chef/ohai/hints"},
-                    "touch": {"command": "touch /etc/chef/ohai/hints/ec2.json"},
-                    "jq": {
-                        "command": (
-                            'jq -s ".[0] * .[1]" /tmp/dna.json /tmp/extra.json > /etc/chef/dna.json '
-                            '|| ( echo "jq not installed"; cp /tmp/dna.json /etc/chef/dna.json )'
-                        )
-                    },
-                },
-            },
-            "chefUpdate": {
-                "commands": {
-                    "chef": {
-                        "command": (
-                            ". /etc/parallelcluster/pcluster_cookbook_environment.sh; "
-                            "cinc-client --local-mode --config /etc/chef/client.rb --log_level info"
-                            " --logfile /var/log/chef-client.log --force-formatter --no-color"
-                            " --chef-zero-port 8889 --json-attributes /etc/chef/dna.json"
-                            " --override-runlist aws-parallelcluster-entrypoints::update &&"
-                            " /opt/parallelcluster/scripts/fetch_and_run -postupdate"
-                        ),
-                        "cwd": "/etc/chef",
-                    }
-                }
             },
         }
 
