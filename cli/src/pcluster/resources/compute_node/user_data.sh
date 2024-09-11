@@ -164,7 +164,7 @@ write_files:
       touch /etc/chef/ohai/hints/ec2.json
 
       start=$(date +%s)
-      jq -s ".[0] * .[1] * .[2] * .[3]" /tmp/common-dna.json /tmp/compute-dna.json /tmp/stack-arn.json /tmp/extra.json > /etc/chef/dna.json || ( echo "jq not installed"; cp /tmp/common-dna.json /tmp/compute-dna.json  /etc/chef/dna.json )
+      jq -s ".[0] * .[1] * .[2] * .[3]" /tmp/common-dna.json /tmp/compute-dna.json /tmp/stack-arn.json /tmp/extra.json > /etc/chef/dna.json
       {
         CINC_CMD="cinc-client --local-mode --config /etc/chef/client.rb --log_level info --logfile /var/log/chef-client.log --force-formatter --no-color --chef-zero-port 8889 --json-attributes /etc/chef/dna.json --override-runlist"
         FR_CMD="/opt/parallelcluster/scripts/fetch_and_run"
