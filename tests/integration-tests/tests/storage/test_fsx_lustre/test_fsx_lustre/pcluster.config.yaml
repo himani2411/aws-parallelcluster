@@ -16,6 +16,9 @@ Scheduling:
   Scheduler: {{ scheduler }}
   {% if scheduler == "awsbatch" %}AwsBatchQueues:{% else %}SlurmQueues:{% endif %}
     - Name: queue-0
+      CapacityType: CAPACITY_BLOCK
+      CapacityReservationTarget:
+        CapacityReservationId: {{ capacity_reservation_id }}
       Iam:
         S3Access:
           - BucketName: {{ bucket_name }}
@@ -30,7 +33,8 @@ Scheduling:
           {% else %}
           Instances:
             - InstanceType: {{ instance }}
-          MinCount: 1
+          MinCount: 4
+          MaxCount: 4
           {% endif %}
       Networking:
         SubnetIds:
