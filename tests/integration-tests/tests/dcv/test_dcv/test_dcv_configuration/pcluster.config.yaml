@@ -1,7 +1,7 @@
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: {{ instance }}
+  InstanceType: c5.18xlarge
   Networking:
     SubnetId: {{ public_subnet_id }}
   Ssh:
@@ -12,20 +12,6 @@ HeadNode:
     AllowedIps: {{ access_from }}
   Imds:
     Secured: {{ imds_secured }}
-{% if scheduler != "awsbatch" %}
-LoginNodes:
-  Pools:
-    - Name: pool
-      InstanceType: {{ instance }}
-      Count: 1
-      Networking:
-        SubnetIds:
-          - {{ public_subnet_id }}
-      Dcv:
-        Enabled: true
-        Port: {{ dcv_port }}
-        AllowedIps: {{ access_from }}
-{% endif %}
 Scheduling:
   Scheduler: {{ scheduler }}
   {% if scheduler == "awsbatch" %}AwsBatchQueues:{% else %}SlurmQueues:{% endif %}
@@ -51,4 +37,4 @@ Scheduling:
           {% endif %}
       Networking:
         SubnetIds:
-          - {{ public_subnet_id }}
+          - {{ private_subnet_id }}
