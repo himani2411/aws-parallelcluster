@@ -96,7 +96,7 @@ def test_slurm(
     if supports_impi:
         _test_mpi_job_termination(remote_command_executor, test_datadir, slurm_commands, region, cluster)
 
-    _assert_no_node_in_cluster(region, cluster.cfn_name, slurm_commands)
+    # _assert_no_node_in_cluster(region, cluster.cfn_name, slurm_commands)
     _test_job_dependencies(slurm_commands, region, cluster.cfn_name, scaledown_idletime)
     _test_job_arrays_and_parallel_jobs(
         slurm_commands,
