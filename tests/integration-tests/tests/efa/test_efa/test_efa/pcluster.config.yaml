@@ -13,6 +13,7 @@ Scheduling:
   Scheduler: {{ scheduler }}
   SlurmQueues:
     - Name: efa-enabled
+      CapacityType: CAPACITY_BLOCK
       Networking:
         PlacementGroup:
           Enabled: {% if instance not in ["p4d.24xlarge", "c6gn.16xlarge"] %}true{% else %}false{% endif %}
@@ -24,11 +25,10 @@ Scheduling:
           {% if "us-iso" in region %}
           InstanceType: {{ instance }}
           {% else %}
-          Instances:
-            - InstanceType: {{ instance }}
+          InstanceType: {{ instance }}
           {% endif %}
-          MaxCount: 2
-          MinCount: 2
+          MaxCount: 4
+          MinCount: 4
           DisableSimultaneousMultithreading: true
           Efa:
             Enabled: true
@@ -37,6 +37,11 @@ Scheduling:
           CapacityReservationTarget:
             CapacityReservationResourceGroupArn: arn:aws:resource-groups:us-east-1:447714826191:group/EC2CRGroup
 {% endif %}
+{% if instance == "p5e.48xlarge" %}
+          CapacityReservationTarget:
+            CapacityReservationId: cr-0365ddf97d6d1a2b1
+{% endif %}
+
 SharedStorage:
   - MountDir: /shared
     Name: name1
