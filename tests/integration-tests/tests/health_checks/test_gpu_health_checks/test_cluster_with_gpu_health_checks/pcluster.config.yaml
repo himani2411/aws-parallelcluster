@@ -22,7 +22,7 @@ Scheduling:
         Gpu:
           Enabled: false
       CapacityReservationTarget:
-        CapacityReservationId: cr-0365ddf97d6d1a2b1
+        CapacityReservationId: {{ capacity_reservation_id }}
       CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-2
       InstanceType: {{ instance }}
@@ -30,7 +30,7 @@ Scheduling:
         Gpu:
           Enabled: true
       CapacityReservationTarget:
-        CapacityReservationId: cr-0365ddf97d6d1a2b1
+        CapacityReservationId: {{ capacity_reservation_id }}
       CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-3
       Instances:
@@ -62,7 +62,7 @@ Scheduling:
         Gpu:
           Enabled: true
       CapacityReservationTarget:
-        CapacityReservationId: cr-0365ddf97d6d1a2b1
+        CapacityReservationId: {{ capacity_reservation_id }}
       CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-2
       Instances:

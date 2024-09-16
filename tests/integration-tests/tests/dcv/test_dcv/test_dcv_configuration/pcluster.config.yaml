@@ -47,7 +47,7 @@ Scheduling:
           {% endif %}
           {% if instance == "p5e.48xlarge" %}
           CapacityReservationTarget:
-            CapacityReservationId: cr-0365ddf97d6d1a2b1
+            CapacityReservationId: {{ capacity_reservation_id }}
           {% endif %}
       Networking:
         SubnetIds:
