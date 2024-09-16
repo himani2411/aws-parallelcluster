@@ -596,6 +596,16 @@ def pcluster_config_reader(test_datadir, vpc_stack, request, region):
         default_values = _get_default_template_values(vpc_stack, request)
         if request.config.getoption("capacity_reservation_id"):
             default_values["capacity_reservation_id"] = request.config.getoption("capacity_reservation_id")
+            ec2_client = boto3.client("ec2", region_name=region)
+            response = ec2_client.describe_capacity_reservations(
+                CapacityReservationIds=[request.config.getoption("capacity_reservation_id")]
+            )
+            if response:
+                instance_count = max(
+                    response["CapacityReservations"][0]["TotalInstanceCount"],
+                    response["CapacityReservations"][0]["AvailableInstanceCount"],
+                )
+            default_values["instance_count"] = instance_count
         file_loader = FileSystemLoader(str(test_datadir))
         env = SandboxedEnvironment(loader=file_loader)
         rendered_template = env.get_template(config_file).render(**{**default_values, **kwargs})

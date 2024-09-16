@@ -30,8 +30,8 @@ Scheduling:
           Instances:
             - InstanceType: {{ instance }}
           {% endif %}
-          MaxCount: 4
-          MinCount: 4
+          MaxCount: {{ instance_count }}
+          MinCount: {{ instance_count }}
       Networking:
         SubnetIds:
           - {{ private_subnet_id }}

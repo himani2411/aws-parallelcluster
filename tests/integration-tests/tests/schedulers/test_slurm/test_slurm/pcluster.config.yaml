@@ -43,8 +43,8 @@ Scheduling:
         - Name: same-name-diff-queue
           Instances:
             - InstanceType: {{ gpu_instance_type }}
-          MinCount: 4
-          MaxCount: 4
+          MinCount: {{ instance_count }}
+          MaxCount: {{ instance_count }}
           CapacityReservationTarget:
             CapacityReservationId: {{ capacity_reservation_id }}
 SharedStorage:
