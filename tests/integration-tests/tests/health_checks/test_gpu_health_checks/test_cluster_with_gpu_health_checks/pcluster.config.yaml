@@ -15,6 +15,7 @@ Scheduling:
     HealthChecks:
       Gpu:
         Enabled: true
+    CapacityType: CAPACITY_BLOCK
     ComputeResources:
     - Name: compute-resource-1
       InstanceType: {{ instance }}
@@ -23,7 +24,6 @@ Scheduling:
           Enabled: false
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
-      CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-2
       InstanceType: {{ instance }}
       HealthChecks:
@@ -31,7 +31,6 @@ Scheduling:
           Enabled: true
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
-      CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-3
       Instances:
         - InstanceType: g4dn.xlarge
@@ -55,6 +54,7 @@ Scheduling:
       SubnetIds:
         - {{ private_subnet_id }}
   - Name: queue-2
+    CapacityType: CAPACITY_BLOCK
     ComputeResources:
     - Name: compute-resource-1
       InstanceType: {{ instance }}
@@ -63,7 +63,6 @@ Scheduling:
           Enabled: true
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
-      CapacityType: CAPACITY_BLOCK
     - Name: compute-resource-2
       Instances:
         - InstanceType: c5.xlarge
