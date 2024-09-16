@@ -30,6 +30,7 @@ Scheduling:
   Scheduler: {{ scheduler }}
   {% if scheduler == "awsbatch" %}AwsBatchQueues:{% else %}SlurmQueues:{% endif %}
     - Name: queue-0
+      CapacityType: CAPACITY_BLOCK
       ComputeResources:
         - Name: compute-resource-0
           {% if scheduler == "awsbatch" %}
@@ -40,9 +41,13 @@ Scheduling:
           DesiredvCpus: 8
           MaxvCpus: 8
           {% else %}
-          Instances:
-            - InstanceType: {{ instance }}
-          MinCount: 1
+          InstanceType: {{ instance }}
+          MinCount: 4
+          MaxCount: 4
+          {% endif %}
+          {% if instance == "p5e.48xlarge" %}
+          CapacityReservationTarget:
+            CapacityReservationId: cr-0365ddf97d6d1a2b1
           {% endif %}
       Networking:
         SubnetIds:
