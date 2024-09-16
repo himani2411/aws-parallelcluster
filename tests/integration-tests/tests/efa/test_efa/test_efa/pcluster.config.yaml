@@ -32,7 +32,7 @@ Scheduling:
           DisableSimultaneousMultithreading: true
           Efa:
             Enabled: true
-            {% if instance == "p4d.24xlarge" %}GdrSupport: true{% endif %}
+            GdrSupport: true
 {% if instance == "p4d.24xlarge" %}
           CapacityReservationTarget:
             CapacityReservationResourceGroupArn: arn:aws:resource-groups:us-east-1:447714826191:group/EC2CRGroup
