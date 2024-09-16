@@ -39,12 +39,14 @@ Scheduling:
       Networking:
         SubnetIds:
           - {{ private_subnet_id }}
-      CapacityType: ONDEMAND
+      CapacityType: CAPACITY_BLOCK
       ComputeResources:
         - Name: same-name-diff-queue
-          Instances:
-            - InstanceType: {{ gpu_instance_type }}
-          MaxCount: 5
+          InstanceType: {{ gpu_instance_type }}
+          MinCount: 4
+          MaxCount: 4
+          CapacityReservationTarget:
+            CapacityReservationId: {{ capacity_reservation_id }}
 SharedStorage:
   - MountDir: /shared  # Test comment
     Name: name1
@@ -53,4 +55,3 @@ DevSettings:
   Timeouts:
     HeadNodeBootstrapTimeout: 1700
     ComputeNodeBootstrapTimeout: {{compute_node_bootstrap_timeout}}
-

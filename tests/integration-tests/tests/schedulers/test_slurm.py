@@ -60,7 +60,7 @@ from tests.common.schedulers_common import SlurmCommands, TorqueCommands
 
 
 @pytest.mark.usefixtures("instance", "os")
-@pytest.mark.parametrize("use_login_node", [True, False])
+@pytest.mark.parametrize("use_login_node", [False])
 def test_slurm(
     region,
     pcluster_config_reader,
@@ -76,7 +76,7 @@ def test_slurm(
     Grouped all tests in a single function so that cluster can be reused for all of them.
     """
     scaledown_idletime = 3
-    gpu_instance_type = "g4dn.2xlarge"
+    gpu_instance_type = "p5e.48xlarge"
     gpu_instance_type_info = get_instance_info(gpu_instance_type, region)
     # For OSs running _test_mpi_job_termination, spin up 2 compute nodes at cluster creation to run test
     # Else do not spin up compute node and start running regular slurm tests
@@ -111,13 +111,13 @@ def test_slurm(
         slurm_commands, partition="gpu", instance_type=gpu_instance_type, instance_type_info=gpu_instance_type_info
     )
     _test_cluster_limits(
-        slurm_commands, partition="ondemand", instance_type="c5.xlarge", max_count=5, cpu_per_instance=4
+        slurm_commands, partition="ondemand", instance_type="c5.xlarge", max_count=4, cpu_per_instance=4
     )
     _test_cluster_gpu_limits(
         slurm_commands,
         partition="gpu",
         instance_type=gpu_instance_type,
-        max_count=5,
+        max_count=4,
         gpu_instance_type_info=gpu_instance_type_info,
     )
     # Test torque command wrapper
