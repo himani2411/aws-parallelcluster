@@ -17,7 +17,7 @@ Scheduling:
   SlurmQueues:
     - Name: queue-0
       CapacityReservationTarget:
-        CapacityReservationId: cr-0f377c10ad2d687b7
+        CapacityReservationId: {{ capacity_reservation_id }}
       ComputeResources:
         - Name: compute-resource-0
           InstanceType: {{ instance }}
