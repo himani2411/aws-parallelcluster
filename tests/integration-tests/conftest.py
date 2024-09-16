@@ -234,6 +234,10 @@ def pytest_addoption(parser):
         "--api-stack",
         help="Name of CFN stack providing the ParallelCluster API infrastructure.",
     )
+    parser.addoption(
+        "--capacity-reservation-id",
+        help="Capacity Reservation ID for CAPACITY_BLOCKS.",
+    )
 
 
 def pytest_generate_tests(metafunc):
@@ -602,6 +606,8 @@ def pcluster_config_reader(test_datadir, vpc_stack, request, region, architectur
             raise FileNotFoundError(f"Cluster config file not found in the expected dir {config_file_path}")
         output_file_path = test_datadir / output_file if output_file else config_file_path
         default_values = _get_default_template_values(vpc_stack, request)
+        if request.config.getoption("capacity_reservation_id"):
+            default_values["capacity_reservation_id"] = request.config.getoption("capacity_reservation_id")
         file_loader = FileSystemLoader(str(test_datadir))
         env = SandboxedEnvironment(loader=file_loader)
         rendered_template = env.get_template(config_file).render(**{**default_values, **kwargs})

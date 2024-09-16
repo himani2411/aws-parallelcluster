@@ -103,6 +103,7 @@ TEST_DEFAULTS = {
     "global_build_number": 0,
     "proxy_stack": None,
     "build_image_roles_stack": None,
+    "capacity_reservation_id": None,
 }
 
 
@@ -489,7 +490,12 @@ def _init_argparser():
         help="Name of CFN stack providing the ParallelCluster API infrastructure.",
         default=TEST_DEFAULTS.get("api_stack"),
     )
-
+    capacity_reservation_group = parser.add_argument_group("Capacity Reservation options")
+    capacity_reservation_group.add_argument(
+        "--capacity-reservation-id",
+        help="Add capacity Reservation ID for CAPACITY_BLOCKS",
+        default=TEST_DEFAULTS.get("capacity_reservation_id"),
+    )  # TODO: Extend for ODCR
     return parser
 
 
@@ -630,6 +636,7 @@ def _get_pytest_args(args, regions, log_file, out_dir):  # noqa: C901
     _set_api_args(args, pytest_args)
     _set_custom_resource_args(args, pytest_args)
     _set_validate_instance_type_args(args, pytest_args)
+    _set_capacity_reservation_args(args, pytest_args)
 
     return pytest_args
 
@@ -730,6 +737,11 @@ def _set_custom_stack_args(args, pytest_args):  # noqa: C901
 def _set_validate_instance_type_args(args, pytest_args):
     if args.force_elastic_ip:
         pytest_args.append("--force-elastic-ip")
+
+
+def _set_capacity_reservation_args(args, pytest_args):
+    if args.capacity_reservation_id:
+        pytest_args.extend(["--capacity-reservation-id", args.capacity_reservation_id])
 
 
 def _set_custom_resource_args(args, pytest_args):
