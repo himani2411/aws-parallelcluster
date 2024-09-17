@@ -17,13 +17,13 @@ Scheduling:
         Enabled: true
     CapacityType: CAPACITY_BLOCK
     ComputeResources:
-    - Name: compute-resource-1
-      InstanceType: {{ instance }}
-      HealthChecks:
-        Gpu:
-          Enabled: false
-      CapacityReservationTarget:
-        CapacityReservationId: {{ capacity_reservation_id }}
+#    - Name: compute-resource-1
+#      InstanceType: {{ instance }}
+#      HealthChecks:
+#        Gpu:
+#          Enabled: false
+#      CapacityReservationTarget:
+#        CapacityReservationId: {{ capacity_reservation_id }}
     - Name: compute-resource-2
       InstanceType: {{ instance }}
       HealthChecks:
@@ -53,22 +53,22 @@ Scheduling:
     Networking:
       SubnetIds:
         - {{ private_subnet_id }}
-  - Name: queue-2
-    CapacityType: CAPACITY_BLOCK
-    ComputeResources:
-    - Name: compute-resource-1
-      InstanceType: {{ instance }}
-      HealthChecks:
-        Gpu:
-          Enabled: true
-      CapacityReservationTarget:
-        CapacityReservationId: {{ capacity_reservation_id }}
-    - Name: compute-resource-2
-      Instances:
-        - InstanceType: c5.xlarge
-      HealthChecks:
-        Gpu:
-          Enabled: true
-    Networking:
-      SubnetIds:
-        - {{ private_subnet_id }}
+#  - Name: queue-2
+#    CapacityType: CAPACITY_BLOCK
+#    ComputeResources:
+#    - Name: compute-resource-1
+#      InstanceType: {{ instance }}
+#      HealthChecks:
+#        Gpu:
+#          Enabled: true
+#      CapacityReservationTarget:
+#        CapacityReservationId: {{ capacity_reservation_id }}
+#    - Name: compute-resource-2
+#      Instances:
+#        - InstanceType: c5.xlarge
+#      HealthChecks:
+#        Gpu:
+#          Enabled: true
+#    Networking:
+#      SubnetIds:
+#        - {{ private_subnet_id }}

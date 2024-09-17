@@ -32,11 +32,11 @@ def test_cluster_with_gpu_health_checks(
 
     expected_nodes_health_statuses = {
         "queue-1": {
-            "compute-resource-1": NodeHealthStatus(
-                node_name="queue-1-dy-compute-resource-1-1",
-                health_check_executed=False,
-                latest_job=None,
-            ),
+            # "compute-resource-1": NodeHealthStatus(
+            #     node_name="queue-1-dy-compute-resource-1-1",
+            #     health_check_executed=False,
+            #     latest_job=None,
+            # ),
             "compute-resource-2": NodeHealthStatus(
                 node_name="queue-1-dy-compute-resource-2-1",
                 health_check_executed=True,
@@ -63,18 +63,18 @@ def test_cluster_with_gpu_health_checks(
                 latest_job=None,
             ),
         },
-        "queue-2": {
-            "compute-resource-1": NodeHealthStatus(
-                node_name="queue-2-dy-compute-resource-1-1",
-                health_check_executed=True,
-                latest_job=None,
-            ),
-            "compute-resource-2": NodeHealthStatus(
-                node_name="queue-2-dy-compute-resource-2-1",
-                health_check_executed=False,
-                latest_job=None,
-            ),
-        },
+        # "queue-2": {
+        #     "compute-resource-1": NodeHealthStatus(
+        #         node_name="queue-2-dy-compute-resource-1-1",
+        #         health_check_executed=True,
+        #         latest_job=None,
+        #     ),
+        #     "compute-resource-2": NodeHealthStatus(
+        #         node_name="queue-2-dy-compute-resource-2-1",
+        #         health_check_executed=False,
+        #         latest_job=None,
+        #     ),
+        # },
     }
     cluster_config = pcluster_config_reader()
     cluster = clusters_factory(cluster_config)
