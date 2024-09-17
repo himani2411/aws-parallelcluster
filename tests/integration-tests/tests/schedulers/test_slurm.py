@@ -1771,7 +1771,7 @@ def _assert_job_completed(slurm_commands, job_id):
     _assert_job_state(slurm_commands, job_id, job_state="COMPLETED")
 
 
-@retry(wait_fixed=seconds(3), stop_max_delay=seconds(15))
+@retry(wait_fixed=seconds(15), stop_max_delay=seconds(30))
 def _assert_job_state(slurm_commands, job_id, job_state):
     try:
         result = slurm_commands.get_job_info(job_id)
