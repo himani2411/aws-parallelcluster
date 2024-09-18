@@ -132,10 +132,9 @@ from pcluster.validators.ebs_validators import (
     MultiAzRootVolumeValidator,
     SharedEbsVolumeIdValidator,
 )
-from pcluster.validators.ec2_validators import (
+from pcluster.validators.ec2_validators import (  # CapacityReservationSizeValidator,
     AmiOsCompatibleValidator,
     CapacityReservationResourceGroupValidator,
-    CapacityReservationSizeValidator,
     CapacityReservationValidator,
     CapacityTypeValidator,
     InstanceTypeAcceleratorManufacturerValidator,
@@ -3180,12 +3179,12 @@ class SlurmClusterConfig(BaseClusterConfig):
                     compute_resource_tags=compute_resource.get_tags(),
                 )
 
-        for capacity_reservation_id, num_of_instances in capacity_reservation_id_max_count_map.items():
-            self._register_validator(
-                CapacityReservationSizeValidator,
-                capacity_reservation_id=capacity_reservation_id,
-                num_of_instances=num_of_instances,
-            )
+        # for capacity_reservation_id, num_of_instances in capacity_reservation_id_max_count_map.items():
+        #     self._register_validator(
+        #         CapacityReservationSizeValidator,
+        #         capacity_reservation_id=capacity_reservation_id,
+        #         num_of_instances=num_of_instances,
+        #     )
 
     @property
     def image_dict(self):

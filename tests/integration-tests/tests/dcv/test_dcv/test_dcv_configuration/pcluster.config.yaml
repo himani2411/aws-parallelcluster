@@ -28,8 +28,8 @@ Scheduling:
           MaxvCpus: 8
           {% else %}
           InstanceType: {{ instance }}
-          MinCount: {{ instance_count }}
-          MaxCount: {{ instance_count }}
+          MinCount: 1
+          MaxCount: 1
           {% endif %}
           {% if instance == "p5e.48xlarge" %}
           CapacityReservationTarget:
