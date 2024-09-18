@@ -32,7 +32,7 @@ Scheduling:
           {% endif %}
       Networking:
         SubnetIds:
-          - {{ private_subnet_ids[0] }}
+          - {{ private_subnet_id }}
       {% if scheduler != "awsbatch" %}
       Iam:
         InstanceRole: {{ ec2_iam_role }}
