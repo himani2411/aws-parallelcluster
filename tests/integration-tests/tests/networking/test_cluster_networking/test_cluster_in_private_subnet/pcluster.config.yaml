@@ -13,6 +13,9 @@ Scheduling:
   Scheduler: {{ scheduler }}
   {% if scheduler == "awsbatch" %}AwsBatchQueues:{% else %}SlurmQueues:{% endif %}
     - Name: queue-0
+      CapacityType: CAPACITY_BLOCK
+      CapacityReservationTarget:
+        CapacityReservationId: {{ capacity_reservation_id }}
       ComputeResources:
         - Name: compute-resource-0
           {% if scheduler == "awsbatch" %}
