@@ -1,7 +1,7 @@
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: c5.xlarge
+  InstanceType: m5d.xlarge
   Networking:
     SubnetId: {{ public_subnet_id }}
   Ssh:
