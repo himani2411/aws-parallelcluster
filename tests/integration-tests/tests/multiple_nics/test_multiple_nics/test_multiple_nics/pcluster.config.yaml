@@ -26,7 +26,8 @@ Scheduling:
           {% else %}
           Instances:
             - InstanceType: {{ instance }}
-          MinCount: 1
+          MinCount: {{ instance_count }}
+          MaxCount: {{ instance_count }}
           Efa:
             Enabled: true
           {% endif %}
