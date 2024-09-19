@@ -793,15 +793,73 @@ def inject_additional_config_settings(cluster_config, request, region, benchmark
     if (
         scheduler == "slurm"
         and dict_has_nested_key(config_content, ("Scheduling", "SlurmQueues"))
-        and request.config.getoption("force_run_instances")
+        and (request.config.getoption("force_run_instances") or request.config.getoption("capacity_reservation_id"))
     ):
         for queues in config_content["Scheduling"]["SlurmQueues"]:
+            if request.config.getoption("capacity_reservation_id"):
+                ec2_client = boto3.client("ec2", region_name=region)
+                response = ec2_client.describe_capacity_reservations(
+                    CapacityReservationIds=[request.config.getoption("capacity_reservation_id")]
+                )
+                if response:
+                    instance_count = response["CapacityReservations"][0]["TotalInstanceCount"]
+                if dict_has_nested_key(queues, ["CapacityType"]):
+                    queues["CapacityType"] = "CAPACITY_BLOCK"
             if dict_has_nested_key(queues, ["ComputeResources"]):
                 for compute_resources in queues["ComputeResources"]:
-                    if dict_has_nested_key(compute_resources, ["Instances"]):
+                    if request.config.getoption("force_run_instances") and dict_has_nested_key(
+                        compute_resources, ["Instances"]
+                    ):
                         instance_type = compute_resources["Instances"][0]["InstanceType"]
                         compute_resources.pop("Instances")
                         compute_resources["InstanceType"] = instance_type
+                    if request.config.getoption("capacity_reservation_id"):
+                        if dict_has_nested_key(compute_resources, ["CapacityReservationTarget"]):
+                            dict_add_nested_key(
+                                config_content,
+                                request.config.getoption("capacity_reservation_id"),
+                                (
+                                    "Scheduling",
+                                    "SlurmQueues",
+                                    "ComputeResources",
+                                    "CapacityReservationTarget",
+                                    "CapacityReservationId",
+                                ),
+                            )
+                            if dict_has_nested_key(
+                                compute_resources["CapacityReservationTarget"], ["CapacityReservationResourceGroupArn"]
+                            ):
+                                compute_resources["CapacityReservationTarget"].pop(
+                                    "CapacityReservationResourceGroupArn"
+                                )
+                        else:
+                            dict_add_nested_key(
+                                config_content,
+                                request.config.getoption("capacity_reservation_id"),
+                                (
+                                    "Scheduling",
+                                    "SlurmQueues",
+                                    "ComputeResources",
+                                    "CapacityReservationTarget",
+                                    "CapacityReservationId",
+                                ),
+                            )
+                        if dict_has_nested_key(compute_resources, ["MinCount"]) or dict_has_nested_key(
+                            compute_resources, ["MaxCount"]
+                        ):
+                            compute_resources["MinCount"] = instance_count
+                            compute_resources["MaxCount"] = instance_count
+                        else:
+                            dict_add_nested_key(
+                                config_content,
+                                instance_count,
+                                ("Scheduling", "SlurmQueues", "ComputeResources", "MinCount"),
+                            )
+                            dict_add_nested_key(
+                                config_content,
+                                instance_count,
+                                ("Scheduling", "SlurmQueues", "ComputeResources", "MaxCount"),
+                            )
 
     # Force addition of ElasticIp as True for Multi Nic instance
     if request.config.getoption("force_elastic_ip"):
