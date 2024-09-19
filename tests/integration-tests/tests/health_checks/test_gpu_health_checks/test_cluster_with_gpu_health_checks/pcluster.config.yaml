@@ -1,7 +1,7 @@
 Image:
   Os: {{ os }}
 HeadNode:
-  InstanceType: {{ instance }}
+  InstanceType: c5.xlarge
   Networking:
     SubnetId: {{ public_subnet_id }}
   Ssh:
@@ -26,30 +26,32 @@ Scheduling:
 #        CapacityReservationId: {{ capacity_reservation_id }}
     - Name: compute-resource-2
       InstanceType: {{ instance }}
+      MinCount: {{ instance_count }}
+      MaxCount: {{ instance_count }}
       HealthChecks:
         Gpu:
           Enabled: true
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
-    - Name: compute-resource-3
-      Instances:
-        - InstanceType: g4dn.xlarge
-      MinCount: 1
-    - Name: compute-resource-4
-      Instances:
-        - InstanceType: c5.xlarge
-      HealthChecks:
-        Gpu:
-          Enabled: false
-    - Name: compute-resource-5
-      Instances:
-        - InstanceType: c5.xlarge
-      HealthChecks:
-        Gpu:
-          Enabled: true
-    - Name: compute-resource-6
-      Instances:
-        - InstanceType: c5.xlarge
+#    - Name: compute-resource-3
+#      Instances:
+#        - InstanceType: g4dn.xlarge
+#      MinCount: 1
+#    - Name: compute-resource-4
+#      Instances:
+#        - InstanceType: c5.xlarge
+#      HealthChecks:
+#        Gpu:
+#          Enabled: false
+#    - Name: compute-resource-5
+#      Instances:
+#        - InstanceType: c5.xlarge
+#      HealthChecks:
+#        Gpu:
+#          Enabled: true
+#    - Name: compute-resource-6
+#      Instances:
+#        - InstanceType: c5.xlarge
     Networking:
       SubnetIds:
         - {{ private_subnet_id }}
