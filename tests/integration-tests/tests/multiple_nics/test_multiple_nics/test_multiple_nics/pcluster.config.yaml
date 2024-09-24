@@ -17,6 +17,9 @@ Scheduling:
       CapacityType: CAPACITY_BLOCK
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
+      CustomSlurmSettings:
+        Sockets: 2
+        CoresPerSocket: 48
       ComputeResources:
         - Name: compute-resource-0
           {% if scheduler == "awsbatch" %}
