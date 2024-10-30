@@ -20,6 +20,7 @@ MAX_QUEUE_SIZE = 50000
     "max_nodes",
     [1000],
 )
+@pytest.mark.parametrize("shared_headnode_storage_type", ["Efs", "Ebs"])
 def test_scaling(
     vpc_stack,
     instance,
@@ -31,8 +32,11 @@ def test_scaling(
     test_datadir,
     scheduler_commands_factory,
     max_nodes,
+    shared_headnode_storage_type,
 ):
-    cluster_config = pcluster_config_reader(max_nodes=max_nodes)
+    cluster_config = pcluster_config_reader(
+        max_nodes=max_nodes, shared_headnode_storage_type=shared_headnode_storage_type
+    )
     cluster = clusters_factory(cluster_config)
 
     logging.info("Cluster Created")
