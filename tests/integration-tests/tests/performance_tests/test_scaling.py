@@ -163,7 +163,7 @@ def test_scaling_stress_test(
 
 
 @pytest.mark.usefixtures("scheduler")
-@pytest.mark.parametrize("scaling_strategy", ["all-or-nothing", "best-effort"])
+@pytest.mark.parametrize("scaling_strategy", ["best-effort", "all-or-nothing"])
 def test_static_scaling_stress_test(
     test_datadir,
     instance,

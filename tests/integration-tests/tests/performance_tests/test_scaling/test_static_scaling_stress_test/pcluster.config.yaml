@@ -16,6 +16,8 @@ Scheduling:
     ScaledownIdletime: {{ scaledown_idletime }}
   SlurmQueues:
     - Name: queue-0
+      CapacityReservationTarget:
+        CapacityReservationId: cr-0f377c10ad2d687b7
       ComputeResources:
         - Name: compute-resource-0
           InstanceType: {{ instance }}
@@ -42,4 +44,3 @@ Scheduling:
       Networking:
         SubnetIds:
           - {{ private_subnet_id }}
-
