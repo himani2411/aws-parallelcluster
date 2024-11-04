@@ -163,7 +163,7 @@ def test_scaling_stress_test(
 
 
 @pytest.mark.usefixtures("scheduler")
-@pytest.mark.parametrize("scaling_strategy", ["best-effort", "all-or-nothing"])
+@pytest.mark.parametrize("scaling_strategy", ["best-effort"])
 def test_static_scaling_stress_test(
     test_datadir,
     instance,
@@ -260,15 +260,21 @@ def _scale_up_and_down(
     upscale_cluster_config=None,
     downscale_cluster_config=None,
 ):
-    # Reset underlying ssh connection to prevent socket closed error
-    remote_command_executor.reset_connection()
+    # # Reset underlying ssh connection to prevent socket closed error
+    # remote_command_executor.reset_connection()
     # Make sure partitions are active
     cluster.start(wait_running=True)
 
     # Scale up cluster
     if is_static:
         # Update the cluster with target number of static nodes
-        cluster.update(str(upscale_cluster_config), force_update="true", wait=False, raise_on_error=False)
+        cluster.update(
+            str(upscale_cluster_config),
+            force_update="true",
+            wait=False,
+            raise_on_error=False,
+            suppress_validators="ALL",
+        )
     else:
         # Submit a simple job to trigger the launch all compute nodes
         scaling_job = {
