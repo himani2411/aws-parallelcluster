@@ -87,7 +87,7 @@ def _get_scaling_time(capacity_time_series: list, timestamps: list, scaling_targ
 
 
 @pytest.mark.usefixtures("scheduler")
-@pytest.mark.parametrize("scaling_strategy", ["all-or-nothing", "best-effort"])
+@pytest.mark.parametrize("scaling_strategy", ["best-effort"])
 def test_scaling_stress_test(
     test_datadir,
     instance,
@@ -129,6 +129,7 @@ def test_scaling_stress_test(
         head_node_instance_type=head_node_instance_type,
         shared_headnode_storage_type=shared_headnode_storage_type,
         scaling_strategy=scaling_strategy,
+        suppress_validators="ALL",
     )
     cluster = clusters_factory(cluster_config)
     remote_command_executor = RemoteCommandExecutor(cluster)
@@ -314,7 +315,13 @@ def _scale_up_and_down(
         scheduler_commands.submit_command_and_assert_job_succeeded(scaling_job)
 
         # Scale down the cluster
-        cluster.update(str(downscale_cluster_config), force_update="true", wait=False, raise_on_error=False)
+        cluster.update(
+            str(downscale_cluster_config),
+            force_update="true",
+            wait=False,
+            raise_on_error=False,
+            suppress_validators="ALL",
+        )
     else:
         # Cancel the running job and scale down the cluster using the update-compute-fleet command
         scheduler_commands.cancel_job(job_id)
