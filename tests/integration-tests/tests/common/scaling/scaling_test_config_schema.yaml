@@ -11,6 +11,3 @@ mapping:
   SharedHeadNodeStorageType:
     type: str
     required: true
-  HeadNodeInstanceType:
-    type: str
-    required: true
