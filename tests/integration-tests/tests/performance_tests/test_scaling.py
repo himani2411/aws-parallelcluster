@@ -72,7 +72,10 @@ def _datetime_to_minute(dt: datetime):
 
 def _get_scaling_time(capacity_time_series: list, timestamps: list, scaling_target: int, start_time: datetime):
     try:
-        scaling_target_index = capacity_time_series.index(scaling_target)
+        # scaling_target_index = capacity_time_series.index(scaling_target) Cluster couldnt scale to 1k but scales to 999 nodes
+        max_instances = max(capacity_time_series)
+        logging.info(f"Cluster scaled upto {max_instances} when it should have scaled to {scaling_target}")
+        scaling_target_index = capacity_time_series.index(max_instances)
         timestamp_at_full_cluster_size = timestamps[scaling_target_index]
         scaling_target_time = datetime.datetime.fromtimestamp(
             float(timestamp_at_full_cluster_size), tz=datetime.timezone.utc
