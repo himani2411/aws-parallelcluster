@@ -238,6 +238,10 @@ def pytest_addoption(parser):
         "--capacity-reservation-id",
         help="Capacity Reservation ID for CAPACITY_BLOCKS.",
     )
+    parser.addoption(
+        "--head-node-instance-type",
+        help="Head Node Instance Type.",
+    )
 
 
 def pytest_generate_tests(metafunc):

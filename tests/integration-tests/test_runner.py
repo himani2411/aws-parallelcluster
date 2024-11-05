@@ -104,6 +104,7 @@ TEST_DEFAULTS = {
     "proxy_stack": None,
     "build_image_roles_stack": None,
     "capacity_reservation_id": None,
+    "head_node_instance_type": None,
 }
 
 
@@ -496,6 +497,11 @@ def _init_argparser():
         help="Add capacity Reservation ID for CAPACITY_BLOCKS",
         default=TEST_DEFAULTS.get("capacity_reservation_id"),
     )  # TODO: Extend for ODCR
+    capacity_reservation_group.add_argument(
+        "--head-node-instance-type",
+        help="Head Node Instance Type",
+        default=TEST_DEFAULTS.get("head_node_instance_type"),
+    )
     return parser
 
 
@@ -742,6 +748,8 @@ def _set_validate_instance_type_args(args, pytest_args):
 def _set_capacity_reservation_args(args, pytest_args):
     if args.capacity_reservation_id:
         pytest_args.extend(["--capacity-reservation-id", args.capacity_reservation_id])
+    if args.head_node_instance_type:
+        pytest_args.extend(["--head-node-instance-type", args.head_node_instance_type])
 
 
 def _set_custom_resource_args(args, pytest_args):
