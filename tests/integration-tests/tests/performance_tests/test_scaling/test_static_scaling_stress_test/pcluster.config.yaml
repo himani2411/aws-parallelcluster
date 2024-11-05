@@ -16,8 +16,10 @@ Scheduling:
     ScaledownIdletime: {{ scaledown_idletime }}
   SlurmQueues:
     - Name: queue-0
+      {% if capacity_reservation_id %}
       CapacityReservationTarget:
         CapacityReservationId: {{ capacity_reservation_id }}
+      {% endif %}
       ComputeResources:
         - Name: compute-resource-0
           InstanceType: {{ instance }}
