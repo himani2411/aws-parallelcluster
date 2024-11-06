@@ -242,6 +242,10 @@ def pytest_addoption(parser):
         "--head-node-instance-type",
         help="Head Node Instance Type.",
     )
+    parser.addoption(
+        "--shared-head-node-storage-type",
+        help="Head Node Storage Type.",
+    )
 
 
 def pytest_generate_tests(metafunc):

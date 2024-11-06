@@ -105,6 +105,7 @@ TEST_DEFAULTS = {
     "build_image_roles_stack": None,
     "capacity_reservation_id": None,
     "head_node_instance_type": None,
+    "shared_head_node_storage_type": None,
 }
 
 
@@ -502,6 +503,11 @@ def _init_argparser():
         help="Head Node Instance Type",
         default=TEST_DEFAULTS.get("head_node_instance_type"),
     )
+    capacity_reservation_group.add_argument(
+        "--shared-head-node-storage-type",
+        help="Head Node Storage Type",
+        default=TEST_DEFAULTS.get("shared_head_node_storage_type"),
+    )
     return parser
 
 
@@ -750,6 +756,8 @@ def _set_capacity_reservation_args(args, pytest_args):
         pytest_args.extend(["--capacity-reservation-id", args.capacity_reservation_id])
     if args.head_node_instance_type:
         pytest_args.extend(["--head-node-instance-type", args.head_node_instance_type])
+    if args.shared_head_node_storage_type:
+        pytest_args.extend(["--shared-head-node-storage-type", args.shared_head_node_storage_type])
 
 
 def _set_custom_resource_args(args, pytest_args):

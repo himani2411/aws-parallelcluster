@@ -8,6 +8,3 @@ mapping:
     required: true
     sequence:
       - type: int
-  SharedHeadNodeStorageType:
-    type: str
-    required: true

@@ -120,7 +120,7 @@ def test_scaling_stress_test(
     scaling_test_config_file = request.config.getoption("scaling_test_config")
     scaling_test_config = validate_and_get_scaling_test_config(scaling_test_config_file)
     max_monitoring_time_in_mins = scaling_test_config.get("MaxMonitoringTimeInMins")
-    shared_headnode_storage_type = scaling_test_config.get("SharedHeadNodeStorageType")
+    shared_headnode_storage_type = request.config.getoption("shared_head_node_storage_type")
     head_node_instance_type = request.config.getoption("head_node_instance_type")
     scaling_targets = scaling_test_config.get("ScalingTargets")
 
@@ -188,7 +188,7 @@ def test_static_scaling_stress_test(
     scaling_test_config_file = request.config.getoption("scaling_test_config")
     scaling_test_config = validate_and_get_scaling_test_config(scaling_test_config_file)
     max_monitoring_time_in_mins = scaling_test_config.get("MaxMonitoringTimeInMins")
-    shared_headnode_storage_type = scaling_test_config.get("SharedHeadNodeStorageType")
+    shared_headnode_storage_type = request.config.getoption("shared_head_node_storage_type")
     head_node_instance_type = request.config.getoption("head_node_instance_type")
     scaling_targets = scaling_test_config.get("ScalingTargets")
 
