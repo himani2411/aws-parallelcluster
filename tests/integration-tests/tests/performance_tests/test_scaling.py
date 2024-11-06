@@ -8,7 +8,7 @@ from assertpy import assert_that, soft_assertions
 from benchmarks.common.metrics_reporter import produce_benchmark_metrics_report
 from remote_command_executor import RemoteCommandExecutor
 from time_utils import minutes
-from utils import disable_protected_mode
+from utils import disable_protected_mode, wait_for_computefleet_changed
 
 from tests.common.assertions import assert_no_msg_in_logs
 from tests.common.scaling_common import get_bootstrap_errors, get_scaling_metrics, validate_and_get_scaling_test_config
@@ -264,20 +264,21 @@ def _scale_up_and_down(
     upscale_cluster_config=None,
     downscale_cluster_config=None,
 ):
-    # # Reset underlying ssh connection to prevent socket closed error
-    # remote_command_executor.reset_connection()
-    # Make sure partitions are active
-    cluster.start(wait_running=True)
+    # Reset underlying ssh connection to prevent socket closed error
+    remote_command_executor.reset_connection()
+    # Make sure partitions are stopped
+    cluster.stop()
+    wait_for_computefleet_changed(cluster, "STOPPED")
 
     # Scale up cluster
     if is_static:
         # Update the cluster with target number of static nodes
         cluster.update(
             str(upscale_cluster_config),
-            force_update="true",
-            wait=False,
-            raise_on_error=False,
-            suppress_validators="ALL",
+            # force_update="true",
+            wait=True,
+            raise_on_error=True,
+            # suppress_validators="ALL",
         )
     else:
         # Submit a simple job to trigger the launch all compute nodes
@@ -288,6 +289,8 @@ def _scale_up_and_down(
         }
         job_id = scheduler_commands.submit_command_and_assert_job_accepted(scaling_job)
 
+    # Make sure partitions are active
+    cluster.start(wait_running=True)
     # Set start time at minute granularity (to simplify calculation and visualising on CloudWatch)
     start_time = _datetime_to_minute(datetime.datetime.now(tz=datetime.timezone.utc))
     # Monitor the cluster during scale up
