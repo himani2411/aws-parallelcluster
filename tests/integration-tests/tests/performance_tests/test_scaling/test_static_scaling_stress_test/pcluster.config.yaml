@@ -23,7 +23,7 @@ Scheduling:
       ComputeResources:
         - Name: compute-resource-0
           Instances:
-            InstanceType: {{ instance }}
+            - InstanceType: {{ instance }}
           MinCount: {{ min_cluster_size }}
           MaxCount: {{ max_cluster_size }}
       Networking:
