@@ -1,2 +1,2 @@
 MaxMonitoringTimeInMins: 20
-ScalingTargets: [1000, 2000, 3000, 4000]
+ScalingTargets: [500, 1000, 1500, 2000]
