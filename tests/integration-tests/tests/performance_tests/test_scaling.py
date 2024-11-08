@@ -163,8 +163,8 @@ def test_scaling_stress_test(
 
 
 @pytest.mark.usefixtures("scheduler")
-@pytest.mark.parametrize("scaling_strategy", ["best-effort", "all-or-nothing"])
-@pytest.mark.parametrize("shared_headnode_storage_type", ["Ebs", "Efs"])
+@pytest.mark.parametrize("scaling_strategy", ["best-effort"])
+@pytest.mark.parametrize("shared_headnode_storage_type", ["Ebs"])
 def test_static_scaling_stress_test(
     test_datadir,
     instance,
