@@ -13,6 +13,8 @@ from utils import disable_protected_mode
 from tests.common.assertions import assert_no_msg_in_logs
 from tests.common.scaling_common import get_bootstrap_errors, get_scaling_metrics, validate_and_get_scaling_test_config
 
+MAX_QUEUE_SIZE = 30000
+
 
 @pytest.mark.parametrize(
     "max_nodes",
@@ -156,7 +158,7 @@ def test_scaling_stress_test(
             # ref https://docs.aws.amazon.com/AWSEC2/latest/APIReference/throttling.html
             if scaling_target != scaling_targets[-1]:
                 logging.info("Waiting for the RunInstances Resource Token Bucket to refill")
-                time.sleep(300)
+                time.sleep(500)
 
 
 @pytest.mark.usefixtures("scheduler")
