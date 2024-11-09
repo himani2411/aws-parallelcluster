@@ -20,6 +20,7 @@ MAX_QUEUE_SIZE = 5000
     "max_nodes",
     [1000],
 )
+@pytest.mark.parametrize("shared_headnode_storage_type", ["Efs", "Ebs"])
 def test_scaling(
     vpc_stack,
     instance,
@@ -31,8 +32,11 @@ def test_scaling(
     test_datadir,
     scheduler_commands_factory,
     max_nodes,
+    shared_headnode_storage_type,
 ):
-    cluster_config = pcluster_config_reader(max_nodes=max_nodes)
+    cluster_config = pcluster_config_reader(
+        max_nodes=max_nodes, shared_headnode_storage_type=shared_headnode_storage_type
+    )
     cluster = clusters_factory(cluster_config)
 
     logging.info("Cluster Created")
@@ -99,6 +103,7 @@ def test_scaling_stress_test(
     scheduler_commands_factory,
     clusters_factory,
     scaling_strategy,
+    shared_headnode_storage_type,
 ):
     """
     This test scales a cluster up and down while periodically monitoring some primary metrics.
@@ -118,7 +123,6 @@ def test_scaling_stress_test(
     scaling_test_config_file = request.config.getoption("scaling_test_config")
     scaling_test_config = validate_and_get_scaling_test_config(scaling_test_config_file)
     max_monitoring_time_in_mins = scaling_test_config.get("MaxMonitoringTimeInMins")
-    shared_headnode_storage_type = scaling_test_config.get("SharedHeadNodeStorageType")
     head_node_instance_type = scaling_test_config.get("HeadNodeInstanceType")
     scaling_targets = scaling_test_config.get("ScalingTargets")
 
@@ -126,7 +130,7 @@ def test_scaling_stress_test(
     cluster_config = pcluster_config_reader(
         # Prevent nodes being set down before we start monitoring the scale down metrics
         scaledown_idletime=max_monitoring_time_in_mins,
-        max_cluster_size=max(scaling_targets),
+        max_cluster_size=MAX_QUEUE_SIZE,
         head_node_instance_type=head_node_instance_type,
         shared_headnode_storage_type=shared_headnode_storage_type,
         scaling_strategy=scaling_strategy,
@@ -175,6 +179,7 @@ def test_static_scaling_stress_test(
     scheduler_commands_factory,
     clusters_factory,
     scaling_strategy,
+    shared_headnode_storage_type,
 ):
     """
     The test scales up a cluster with a large number of static nodes, as opposed to scaling
@@ -185,7 +190,6 @@ def test_static_scaling_stress_test(
     scaling_test_config_file = request.config.getoption("scaling_test_config")
     scaling_test_config = validate_and_get_scaling_test_config(scaling_test_config_file)
     max_monitoring_time_in_mins = scaling_test_config.get("MaxMonitoringTimeInMins")
-    shared_headnode_storage_type = scaling_test_config.get("SharedHeadNodeStorageType")
     head_node_instance_type = scaling_test_config.get("HeadNodeInstanceType")
     scaling_targets = scaling_test_config.get("ScalingTargets")
 
@@ -216,7 +220,7 @@ def test_static_scaling_stress_test(
                 shared_headnode_storage_type=shared_headnode_storage_type,
                 scaling_strategy=scaling_strategy,
                 min_cluster_size=scaling_target,
-                max_cluster_size=scaling_target,
+                max_cluster_size=MAX_QUEUE_SIZE,
                 output_file=f"{scaling_target}-upscale-pcluster.config.yaml",
             )
             _scale_up_and_down(
