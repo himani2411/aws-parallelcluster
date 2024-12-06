@@ -828,5 +828,5 @@ test-suites:
       dimensions:
         - regions: ["eu-west-1"]
           instances: {{ common.INSTANCES_DEFAULT_X86 }}
-          oss: ["ubuntu2204"]
+          oss: [{{ OS_X86_0 }}]
           schedulers: ["slurm"]
