@@ -1495,6 +1495,12 @@ class ClusterCdkStack:
                 "group": "root",
                 "content": self._get_launch_templates_config(),
             }
+            cfn_init["deployConfigFiles"]["files"]["/opt/parallelcluster/shared/compute_specific_dnas.json"] = {
+                "mode": "000644",
+                "owner": "root",
+                "group": "root",
+                "content": self._get_compute_specific_dnas(),
+            }
 
         head_node_launch_template.add_metadata("AWS::CloudFormation::Init", cfn_init)
         head_node_instance = ec2.CfnInstance(
@@ -1527,6 +1533,18 @@ class ClusterCdkStack:
                 }
 
         return lt_config
+
+    def _get_compute_specific_dnas(self):
+        if not self.compute_fleet_resources:
+                return None
+
+        compute_specific_dna = {"Queues": {}}
+        for queue, compute_resources in self.compute_fleet_resources.compute_specific_dnas.items():
+            compute_specific_dna["Queues"][queue] = {"ComputeResources": {}}
+            for compute_resource, dna in compute_resources.items():
+                compute_specific_dna["Queues"][queue]["ComputeResources"][compute_resource] = dna
+
+        return compute_specific_dna
 
     # -- Conditions -------------------------------------------------------------------------------------------------- #
 

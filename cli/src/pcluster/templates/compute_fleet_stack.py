@@ -65,6 +65,7 @@ class ComputeFleetConstruct(Construct):
         self._cluster_bucket = cluster_bucket
 
         self.launch_templates = {}
+        self.compute_specific_dnas = {}
         self.managed_compute_fleet_instance_roles = {}
         self.managed_compute_fleet_placement_groups = {}
 
@@ -102,6 +103,7 @@ class ComputeFleetConstruct(Construct):
 
         self.managed_compute_fleet_instance_roles.update(queues_stack.managed_compute_instance_roles)
         self.launch_templates.update(queues_stack.compute_launch_templates)
+        self.compute_specific_dnas.update(queues_stack.compute_specific_dnas)
         self.managed_compute_fleet_placement_groups.update(queues_stack.managed_placement_groups)
 
         custom_resource_deps = list(self.managed_compute_fleet_placement_groups.values())

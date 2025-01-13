@@ -120,12 +120,14 @@ class QueuesStack(NestedStack):
 
     def _add_launch_templates(self):
         self.compute_launch_templates = {}
+        self.compute_specific_dnas = {}
         for queue in self._queues:
             self.compute_launch_templates[queue.name] = {}
+            self.compute_specific_dnas[queue.name] = {}
             queue_lt_security_groups = get_queue_security_groups_full(self._compute_security_group, queue)
 
             for resource in queue.compute_resources:
-                self.compute_launch_templates[queue.name][resource.name] = self._add_compute_resource_launch_template(
+                self.compute_launch_templates[queue.name][resource.name], self.compute_specific_dnas[queue.name][resource.name] = self._add_compute_resource_launch_template(
                     queue,
                     resource,
                     queue_lt_security_groups,
@@ -200,6 +202,21 @@ class QueuesStack(NestedStack):
 
         launch_template_id = f"LaunchTemplate{create_hash_suffix(queue.name + compute_resource.name)}"
 
+        compute_specific_dna_json = json.dumps({
+                "stack_arn": self.stack_id,  # Dynamic
+                "enable_efa": "efa" if compute_resource.efa and compute_resource.efa.enabled else "NONE",
+                "ephemeral_dir": (
+                    queue.compute_settings.local_storage.ephemeral_volume.mount_dir
+                    if isinstance(queue, SlurmQueue) and queue.compute_settings.local_storage.ephemeral_volume
+                    else DEFAULT_EPHEMERAL_DIR
+                ),
+                "proxy": queue.networking.proxy.http_proxy_address if queue.networking.proxy else "NONE",
+                "node_type": "ComputeFleet",
+                "scheduler_queue_name": queue.name,
+                "scheduler_compute_resource_name": compute_resource.name,
+                "enable_efa_gdr": ("compute" if compute_resource.efa and compute_resource.efa.gdr_support else "NONE"),
+                "launch_template_id": launch_template_id,
+        })
         dna_json = json.dumps(
             {
                 "cluster": {
@@ -399,4 +416,4 @@ class QueuesStack(NestedStack):
             ),
         )
 
-        return launch_template
+        return launch_template, compute_specific_dna_json
