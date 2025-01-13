@@ -276,9 +276,6 @@ class Pool(Construct):
                                 "LaunchingLifecycleHookName": (
                                     f"{self._login_nodes_stack_id}-LoginNodesLaunchingLifecycleHook"
                                 ),
-                                "LaunchTemplateResourceId": launch_template_id,
-                                "CloudFormationUrl": get_service_endpoint("cloudformation", self._config.region),
-                                "CfnInitRole": instance_role_name,
                                 "DnaJson": dna_json,
                                 "ExtraJson": self._config.extra_chef_attributes,
                             },
@@ -306,27 +303,6 @@ class Pool(Construct):
             ),
         )
 
-        cfn_init = {
-            "configSets": {
-                "update": ["deployConfigFiles"],
-            },
-            "deployConfigFiles": {
-                "files": {
-                    # A nosec comment is appended to the following line in order to disable the B108 check.
-                    # The file is needed by the product
-                    # [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
-                    "/tmp/cluster-config-version.json": {  # nosec B108
-                        "content": self._config.config_version,
-                        "mode": "000644",
-                        "owner": "root",
-                        "group": "root",
-                        "encoding": "plain",
-                    },
-                },
-            },
-        }
-
-        launch_template.add_metadata("AWS::CloudFormation::Init", cfn_init)
 
         return launch_template
 
