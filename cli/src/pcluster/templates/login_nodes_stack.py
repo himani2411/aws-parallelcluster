@@ -93,7 +93,7 @@ class Pool(Construct):
             self._login_nodes_pool_target_group
         )
 
-        self._launch_template = self._add_login_nodes_pool_launch_template()
+        self._launch_template, self._login_node_specific_dna = self._add_login_nodes_pool_launch_template()
         self._add_login_nodes_pool_auto_scaling_group()
 
         # Add a pool name tag to the pool's resources
@@ -144,6 +144,22 @@ class Pool(Construct):
             instance_role_name = self._instance_role.ref
 
         launch_template_id = f"LoginNodeLaunchTemplate{create_hash_suffix(self._pool.name)}"
+
+        login_node_specific_dna_json = json.dumps({
+            "stack_arn": self.stack_id,
+            "ephemeral_dir": DEFAULT_EPHEMERAL_DIR,
+            "dns_domain": (str(self._cluster_hosted_zone.name) if self._cluster_hosted_zone else ""),
+            "hosted_zone": (str(self._cluster_hosted_zone.ref) if self._cluster_hosted_zone else ""),
+            "dcv_enabled": "login_node" if self._pool.has_dcv_enabled else "false",
+            "dcv_port": self._pool.dcv.port if self._pool.dcv else "NONE",
+            "pool_name": self._pool.name,
+            "node_type": "LoginNode",
+            "proxy": self._pool.networking.proxy.http_proxy_address if self._pool.networking.proxy else "NONE",
+            "use_private_hostname": str(
+                get_attr(self._config, "scheduling.settings.dns.use_ec2_hostnames", default=False)
+            ).lower(),
+            "launch_template_id": launch_template_id,
+        })
         dna_json = json.dumps(
             {
                 "cluster": {
@@ -304,7 +320,7 @@ class Pool(Construct):
         )
 
 
-        return launch_template
+        return launch_template, login_node_specific_dna_json
 
     def _add_login_nodes_pool_auto_scaling_group(self):
         launch_template_specification = autoscaling.CfnAutoScalingGroup.LaunchTemplateSpecificationProperty(

@@ -289,15 +289,17 @@ class ClusterCdkStack:
 
         # Wait condition
         self.wait_condition, self.wait_condition_handle = self._add_wait_condition()
-
+        # Initialize Login Nodes
+        self._add_login_nodes_resources() ### TODO: Check effect of moving LN before HN
         # Head Node
         self.head_node_instance = self._add_head_node()
         # Add a dependency to the cleanup Route53 resource, so that Route53 Hosted Zone is cleaned after node is deleted
         if self._condition_is_slurm() and hasattr(self.scheduler_resources, "cleanup_route53_custom_resource"):
             self.head_node_instance.add_depends_on(self.scheduler_resources.cleanup_route53_custom_resource)
 
-        # Initialize Login Nodes
-        self._add_login_nodes_resources()
+        # Add dependency on the Head Node construct
+        if self._condition_is_slurm() and self.config.login_nodes:
+            self.login_nodes_stack.node.add_dependency(self.head_node_instance)
 
         # AWS Batch related resources
         if self._condition_is_batch():
@@ -473,8 +475,6 @@ class ClusterCdkStack:
                 cluster_hosted_zone=self.scheduler_resources.cluster_hosted_zone if self.scheduler_resources else None,
                 cluster_bucket=self.bucket,
             )
-            # Add dependency on the Head Node construct
-            self.login_nodes_stack.node.add_dependency(self.head_node_instance)
 
     def _add_cleanup_resources_lambda(self):
         """Create Lambda cleanup resources function and its role."""
@@ -1501,6 +1501,12 @@ class ClusterCdkStack:
                 "group": "root",
                 "content": self._get_compute_specific_dnas(),
             }
+            cfn_init["deployConfigFiles"]["files"]["/opt/parallelcluster/shared/login_node_specific_dnas.json"] = {
+                "mode": "000644",
+                "owner": "root",
+                "group": "root",
+                "content": self._get_login_node_specific_dnas(),
+            }
 
         head_node_launch_template.add_metadata("AWS::CloudFormation::Init", cfn_init)
         head_node_instance = ec2.CfnInstance(
@@ -1545,6 +1551,17 @@ class ClusterCdkStack:
                 compute_specific_dna["Queues"][queue]["ComputeResources"][compute_resource] = dna
 
         return compute_specific_dna
+
+
+    def _get_login_node_specific_dnas(self):
+        if not self.login_nodes_stack:
+            return None
+
+        login_node_specific_dna = {"LoginPool": {}}
+        for pool_name, pool_resources in self.login_nodes_stack.pools.items():
+            login_node_specific_dna["LoginPool"][pool_name] = pool_resources._login_node_specific_dna
+
+        return login_node_specific_dna
 
     # -- Conditions -------------------------------------------------------------------------------------------------- #
 
