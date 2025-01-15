@@ -1414,6 +1414,28 @@ class ClusterCdkStack:
                     },
                 },
             },
+            "shareDnaFiles": {
+                "files": {
+                    # A nosec comment is appended to the following line in order to disable the B108 check.
+                    # The file is needed by the product
+                    # [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+                    "/opt/parallelcluster/shared/compute_specific_dnas.json": {  # nosec B108
+                        "content": self._get_launch_templates_config(),
+                        "mode": "000644",
+                        "owner": "root",
+                        "group": "root",
+                    },
+                    # A nosec comment is appended to the following line in order to disable the B108 check.
+                    # The file is needed by the product
+                    # [B108:hardcoded_tmp_directory] Probable insecure usage of temp file/directory.
+                    "/opt/parallelcluster/shared/login_node_specific_dnas.json": {  # nosec B108
+                        "mode": "000644",
+                        "owner": "root",
+                        "group": "root",
+                        "content": self._get_login_node_specific_dnas(),
+                    }
+                }
+            },
             "chefPrepEnv": {
                 "commands": {
                     "chef": {
@@ -1495,18 +1517,19 @@ class ClusterCdkStack:
                 "group": "root",
                 "content": self._get_launch_templates_config(),
             }
-            cfn_init["deployConfigFiles"]["files"]["/opt/parallelcluster/shared/compute_specific_dnas.json"] = {
-                "mode": "000644",
-                "owner": "root",
-                "group": "root",
-                "content": self._get_compute_specific_dnas(),
-            }
-            cfn_init["deployConfigFiles"]["files"]["/opt/parallelcluster/shared/login_node_specific_dnas.json"] = {
-                "mode": "000644",
-                "owner": "root",
-                "group": "root",
-                "content": self._get_login_node_specific_dnas(),
-            }
+            cfn_init["configSets"]["update"].insert(1, "shareDnaFiles")
+            # cfn_init["shareDnaFiles"]["files"]["/opt/parallelcluster/shared/compute_specific_dnas.json"] = {
+            #     "mode": "000644",
+            #     "owner": "root",
+            #     "group": "root",
+            #     "content": self._get_compute_specific_dnas(),
+            # }
+            # cfn_init["shareDnaFiles"]["files"]["/opt/parallelcluster/shared/login_node_specific_dnas.json"] = {
+            #     "mode": "000644",
+            #     "owner": "root",
+            #     "group": "root",
+            #     "content": self._get_login_node_specific_dnas(),
+            # }
 
         head_node_launch_template.add_metadata("AWS::CloudFormation::Init", cfn_init)
         head_node_instance = ec2.CfnInstance(
