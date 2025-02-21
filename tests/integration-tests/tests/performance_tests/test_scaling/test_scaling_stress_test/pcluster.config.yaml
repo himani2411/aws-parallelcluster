@@ -21,6 +21,8 @@ Scheduling:
           Instances:
             - InstanceType: {{ instance }}
           MaxCount: {{ max_cluster_size }}
+          CapacityReservationTarget:
+            CapacityReservationResourceGroupArn: {{ target_capacity_reservation_arn }}
       Networking:
         SubnetIds:
           {% for private_subnet_id in private_subnet_ids %}

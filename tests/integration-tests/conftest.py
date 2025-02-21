@@ -1210,6 +1210,7 @@ def scaling_odcr_stack(
     request,
     region,
     os,
+    instance,
     cfn_stacks_factory,
     vpc_stack: CfnVpcStack,
 ):
@@ -1237,7 +1238,7 @@ def scaling_odcr_stack(
             AvailabilityZone=default_public_az,
             InstanceCount=first_odcr_instances_count,
             InstancePlatform=instance_platform,
-            InstanceType="c5.large",
+            InstanceType=instance,
             InstanceMatchCriteria="targeted",
         )
         scaling_odcr_b = ec2.CapacityReservation(
@@ -1245,7 +1246,7 @@ def scaling_odcr_stack(
             AvailabilityZone=default_public_az,
             InstanceCount=instances_count - first_odcr_instances_count,
             InstancePlatform=instance_platform,
-            InstanceType="c5.large",
+            InstanceType=instance,
             InstanceMatchCriteria="targeted",
         )
 

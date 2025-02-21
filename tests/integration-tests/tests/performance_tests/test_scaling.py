@@ -8,7 +8,7 @@ from assertpy import assert_that, soft_assertions
 from benchmarks.common.metrics_reporter import produce_benchmark_metrics_report
 from remote_command_executor import RemoteCommandExecutor
 from time_utils import minutes
-from utils import disable_protected_mode
+from utils import disable_protected_mode, retrieve_resource_group_arn_from_resource
 
 from tests.common.assertions import assert_no_msg_in_logs
 from tests.common.scaling_common import get_bootstrap_errors, get_scaling_metrics, validate_and_get_scaling_test_config
@@ -105,6 +105,7 @@ def test_scaling_stress_test(
     os,
     region,
     request,
+    scaling_odcr_stack,
     pcluster_config_reader,
     scheduler_commands_factory,
     clusters_factory,
@@ -128,13 +129,19 @@ def test_scaling_stress_test(
     # Get the scaling parameters
     scaling_test_config_file = request.config.getoption("scaling_test_config")
     scaling_test_config = validate_and_get_scaling_test_config(scaling_test_config_file)
+    scaling_targets = scaling_test_config.get("ScalingTargets")
+
+    odcr_stack = scaling_odcr_stack(max(scaling_targets))
+    resource_group_arn = retrieve_resource_group_arn_from_resource(
+        odcr_stack.cfn_resources["integTestsScalingOdcrGroup"]
+    )
     max_monitoring_time_in_mins = scaling_test_config.get("MaxMonitoringTimeInMins")
     head_node_instance_type = scaling_test_config.get("HeadNodeInstanceType")
-    scaling_targets = scaling_test_config.get("ScalingTargets")
 
     # Creating cluster with intended head node instance type and scaling parameters
     cluster_config = pcluster_config_reader(
         # Prevent nodes being set down before we start monitoring the scale down metrics
+        target_capacity_reservation_arn=resource_group_arn,
         scaledown_idletime=max_monitoring_time_in_mins,
         max_cluster_size=MAX_QUEUE_SIZE,
         head_node_instance_type=head_node_instance_type,
