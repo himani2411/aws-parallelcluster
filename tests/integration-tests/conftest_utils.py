@@ -17,7 +17,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, List
 
-import boto3
 import jsonpickle
 import pluggy
 import pytest
@@ -241,12 +240,3 @@ def get_reporting_region(region: str):
         (region for partition, region in REPORTING_REGION_MAP.items() if partition == curr_partition),
         DEFAULT_REPORTING_REGION,
     )
-
-def delete_cluster_cw_logs(item: pytest.Item):
-    if not item.config.getoption("--no-delete"):
-        cw_log_group_name = "aws/parallelcluster/" + get_user_prop(item, "cw_log_group_name")
-        reporting_region = get_reporting_region(get_user_prop(item, "region"))
-        logging.info(f"Deleting cluster CW group {cw_log_group_name} as the test passed")
-        client = boto3.client("logs", reporting_region)
-        response = client.delete_log_group(logGroupName=cw_log_group_name)
-        logging.info(f"Cluster Log group {cw_log_group_name} was deleted with {response.get('ResponseMetadata').get('HTTPStatusCode')}")

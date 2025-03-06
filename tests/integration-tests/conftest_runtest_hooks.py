@@ -19,7 +19,7 @@ from conftest_utils import (
     publish_test_metadata,
     publish_test_metrics,
     runtest_hook_start_end_time,
-    update_failed_tests_config, delete_cluster_cw_logs,
+    update_failed_tests_config,
 )
 from utils import set_logger_formatter
 
@@ -94,9 +94,3 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo):
         publish_test_metadata(item, rep)
     except Exception as exc:
         logging.info(f"There was a '{type(exc)}' error with '{exc}' when publishing the report!")
-
-    if rep.when in ["call"] and rep.passed:
-        try:
-            delete_cluster_cw_logs(item)
-        except Exception as e:
-            logging.error("Failed when deleting cluster CW logs for passed test: %s", e, exc_info=True)
