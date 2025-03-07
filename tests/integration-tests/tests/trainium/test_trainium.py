@@ -36,9 +36,9 @@ def test_trainium(
 
     # TODO uncomment allreduce test when bug fix in collective library
     # _test_allreduce_single_node(test_datadir, remote_command_executor, scheduler_commands)
+    _test_primary_ip(test_datadir, remote_command_executor, scheduler_commands)
     _test_ccl_two_nodes(test_datadir, remote_command_executor, scheduler_commands)
 
-    _test_primary_ip(test_datadir, remote_command_executor, scheduler_commands)
 
 
 def _test_allreduce_single_node(test_datadir, remote_command_executor, scheduler_commands):
