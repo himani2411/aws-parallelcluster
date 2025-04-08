@@ -336,11 +336,22 @@ class CapacityReservationValidator(Validator):
         subnet: str,
         capacity_type: CapacityType,
         os,
+        custom_ami,
     ):
         if capacity_reservation_id:
             capacity_reservation = AWSApi.instance().ec2.describe_capacity_reservations([capacity_reservation_id])[0]
             cr_platform = capacity_reservation.instance_platform()
-            if CAPACITY_RESERVATION_OS_MAP.get(os) != cr_platform:
+
+            custom_ami_platform = None
+            if custom_ami:
+                custom_ami_platform = AWSApi.instance().ec2.describe_image(custom_ami).platform_details
+            if custom_ami_platform and cr_platform not in custom_ami_platform:
+                self._add_failure(
+                    f"Capacity reservation {capacity_reservation_id} has platform {cr_platform},"
+                    f" which is not compatible with the AMI Platform {custom_ami_platform}.",
+                    FailureLevel.ERROR,
+                )
+            if not custom_ami and CAPACITY_RESERVATION_OS_MAP.get(os) != cr_platform:
                 self._add_failure(
                     f"Capacity reservation {capacity_reservation_id} has platform {cr_platform},"
                     f" which is not compatible with the cluster OS {os}. "

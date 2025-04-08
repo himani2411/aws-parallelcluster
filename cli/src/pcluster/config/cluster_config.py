@@ -3114,6 +3114,7 @@ class SlurmClusterConfig(BaseClusterConfig):
                         subnet=queue.networking.subnet_ids[0],
                         capacity_type=queue.capacity_type,
                         os=self.image.os,
+                        custom_ami=queue_image,
                     )
                     self._register_validator(
                         CapacityReservationResourceGroupValidator,

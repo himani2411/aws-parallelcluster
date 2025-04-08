@@ -408,6 +408,11 @@ class ImageInfo:
         return self._image_data.get("Description")
 
     @property
+    def platform_details(self) -> str:
+        """Return image platform details."""
+        return self._image_data.get("PlatformDetails")
+
+    @property
     def state(self) -> str:
         """Return image state."""
         return self._image_data.get("State")
