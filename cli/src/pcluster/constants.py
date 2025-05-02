@@ -263,7 +263,7 @@ UNSUPPORTED_FEATURES_MAP = {
     Feature.DCV: ["us-iso"],
     Feature.FSX_LUSTRE: [],
     Feature.FILE_CACHE: ["us-iso"],
-    Feature.FSX_ONTAP: ["us-iso-"],
+    Feature.FSX_ONTAP: ["us-iso-w"],
     Feature.FSX_OPENZFS: ["us-iso"],
     Feature.SLURM_DATABASE: [],
     Feature.CLUSTER_HEALTH_METRICS: ["us-iso"],
