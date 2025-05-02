@@ -213,7 +213,7 @@ Resources:
       - ProxyENI
     Properties:
       IamInstanceProfile: !Ref ProxyInstanceProfile
-      ImageId: resolve:ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+      ImageId: resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs
       InstanceType: t3.medium
       KeyName: !Ref Keypair
       NetworkInterfaces:
@@ -304,7 +304,7 @@ Resources:
       - Proxy
     Properties:
       IamInstanceProfile: !Ref ProxyClientNodeInstanceProfile
-      ImageId: resolve:ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+      ImageId: resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs
       InstanceType: t3.medium
       KeyName: !Ref Keypair
       SecurityGroupIds:
