@@ -170,7 +170,7 @@ class QueuesStack(NestedStack):
                     device_index=0 if network_card.maximum_network_interfaces() == 1 else 1,
                     network_card_index=network_card.network_card_index(),
                     associate_public_ip_address=False,
-                    interface_type="efa" if compute_resource.efa and compute_resource.efa.enabled else None,
+                    interface_type="efa-only" if compute_resource.efa and compute_resource.efa.enabled else None,
                     groups=queue_lt_security_groups,
                     subnet_id=(
                         queue.networking.subnet_ids[0] if isinstance(compute_resource, SlurmComputeResource) else None
