@@ -167,7 +167,8 @@ class QueuesStack(NestedStack):
         for network_card in compute_resource.network_cards_list[1:]:
             compute_lt_nw_interfaces.append(
                 ec2.CfnLaunchTemplate.NetworkInterfaceProperty(
-                    device_index=0 if network_card.maximum_network_interfaces() == 1 else 1,
+                    device_index=0, # if network_card.maximum_network_interfaces() == 1 else 1,
+                    # TODO: Change this programatically to Keep DeviceIndex 0
                     network_card_index=network_card.network_card_index(),
                     associate_public_ip_address=False,
                     interface_type="efa-only" if compute_resource.efa and compute_resource.efa.enabled else None,
