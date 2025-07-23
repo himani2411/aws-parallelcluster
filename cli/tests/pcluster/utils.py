@@ -113,20 +113,14 @@ def assert_lambdas_have_expected_vpc_config_and_managed_policy(generated_templat
     resources = generated_template.get("Resources")
 
     for lambda_function in _get_lambda_functions(resources):
-        role_name = _get_role_name(lambda_function)
-        if isinstance(role_name, str) and role_name.__contains__("arn"):
-            role = None
-        else:
-            role = resources.get(_get_role_name(lambda_function))
+        role = resources.get(_get_role_name(lambda_function))
 
         if expected_vpc_config:
             assert_that(_get_vpc_config(lambda_function)).is_equal_to(expected_vpc_config)
-            if role:
-                assert_that(_get_managed_policy_arns(role)).contains(LAMBDA_VPC_ACCESS_MANAGED_POLICY)
+            assert_that(_get_managed_policy_arns(role)).contains(LAMBDA_VPC_ACCESS_MANAGED_POLICY)
         else:
             assert_that(_get_vpc_config(lambda_function)).is_none()
-            if role:
-                assert_that(_get_managed_policy_arns(role)).does_not_contain(LAMBDA_VPC_ACCESS_MANAGED_POLICY)
+            assert_that(_get_managed_policy_arns(role)).does_not_contain(LAMBDA_VPC_ACCESS_MANAGED_POLICY)
 
 
 def _get_vpc_config(lambda_function):
@@ -134,12 +128,7 @@ def _get_vpc_config(lambda_function):
 
 
 def _get_role_name(lambda_function):
-    role_prop = lambda_function.get("Properties").get("Role")
-
-    if "Fn::GetAtt" in role_prop:
-        return role_prop.get("Fn::GetAtt")[0]
-
-    return role_prop.get("Fn::Sub")
+    return lambda_function.get("Properties").get("Role").get("Fn::GetAtt")[0]
 
 
 def _get_lambda_functions(resources):
