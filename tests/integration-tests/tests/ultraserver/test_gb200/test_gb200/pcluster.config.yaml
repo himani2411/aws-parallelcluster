@@ -35,7 +35,6 @@ Scheduling:
         HealthChecks:
           Gpu:
             Enabled: True
-            GdrSupport: true
       - Name: {{ compute_resource_with_imex_2 }}
         CapacityReservationTarget:
           CapacityReservationId: "cr-047bd29d522402729"
