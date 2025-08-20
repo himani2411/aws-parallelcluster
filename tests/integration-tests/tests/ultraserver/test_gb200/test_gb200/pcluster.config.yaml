@@ -27,9 +27,16 @@ Scheduling:
           - InstanceType: {{ instance }}
         MinCount: {{ max_queue_size }}
         MaxCount: {{ max_queue_size }}
+        {% if instance == "p6e-gb200.36xlarge" %}
+        DisableSimultaneousMultithreading: true
+        Efa:
+          Enabled: true
+          GdrSupport: true
+        {% endif %}
         HealthChecks:
           Gpu:
             Enabled: True
+            GdrSupport: true
       - Name: {{ compute_resource_with_imex_2 }}
         CapacityReservationTarget:
           CapacityReservationId: "cr-047bd29d522402729"
@@ -37,6 +44,12 @@ Scheduling:
           - InstanceType: {{ instance }}
         MinCount: {{ max_queue_size }}
         MaxCount: {{ max_queue_size }}
+        {% if instance == "p6e-gb200.36xlarge" %}
+        DisableSimultaneousMultithreading: true
+        Efa:
+          Enabled: true
+          GdrSupport: true
+        {% endif %}
         HealthChecks:
           Gpu:
             Enabled: True
