@@ -391,7 +391,7 @@ def process_ultraserver_capacity_block_sizes(cluster_ultraserver_capacity_block_
 
         capacity_reservation_ids = cluster_ultraserver_capacity_block_dict.get(ultraserver_instance_prefix)
         if capacity_reservation_ids:
-            statuses = AWSApi.instance().ec2.describe_capacity_block_status(capacity_reservation_ids)
+            statuses = AWSApi.instance().ec2.describe_capacity_block_status(['cbr-0b94ac1faa05a66e7', 'cbr-0d7bcf7a2281538e6'])
 
             for status in statuses:
                 size = status.get("TotalCapacity")

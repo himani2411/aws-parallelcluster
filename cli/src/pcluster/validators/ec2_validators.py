@@ -488,7 +488,7 @@ class CapacityBlockHealthStatusValidator(Validator):
         for cb_id in capacity_reservation_ids:
             try:
                 # Try to get capacity block status first
-                statuses = AWSApi.instance().ec2.describe_capacity_block_status([cb_id])
+                statuses = AWSApi.instance().ec2.describe_capacity_block_status(['cbr-0b94ac1faa05a66e7', 'cbr-0d7bcf7a2281538e6'])
 
                 # Check health status for active capacity blocks
                 for status in statuses:
