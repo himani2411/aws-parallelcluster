@@ -30,6 +30,16 @@ Scheduling:
         HealthChecks:
           Gpu:
             Enabled: True
+      - Name: {{ compute_resource_with_imex_2 }}
+        CapacityReservationTarget:
+          CapacityReservationId: "cr-047bd29d522402729"
+        Instances:
+          - InstanceType: {{ instance }}
+        MinCount: {{ max_queue_size }}
+        MaxCount: {{ max_queue_size }}
+        HealthChecks:
+          Gpu:
+            Enabled: True
     Networking:
       SubnetIds:
         - {{ private_subnet_id }}
