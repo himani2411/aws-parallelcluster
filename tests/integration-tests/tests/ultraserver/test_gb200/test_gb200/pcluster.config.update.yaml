@@ -42,7 +42,7 @@ Scheduling:
             Enabled: True
     Networking:
       SubnetIds:
-        - {{ private_subnet_id }}
+        - {{ private_subnet_id_for_capacity_block }}
   - Name: {{ queue_without_imex }}
     ComputeResources:
       - Name: {{ compute_resource_without_imex }}

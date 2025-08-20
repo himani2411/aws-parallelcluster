@@ -357,6 +357,7 @@ def test_gb200(
     This is a reasonable approximation for the test because the focus of the test is on IMEX and topology configuration,
     which can be executed on g4dn as well.
     """
+    private_subnet_id_for_capacity_block = "subnet-030a83ae6860920e4"
     max_queue_size = 2
     capacity_block_reservation_id = CAPACITY_BLOCK_RESERVATION_ID if instance == "p6e-gb200.36xlarge" else None
 
@@ -386,6 +387,7 @@ def test_gb200(
     compute_resource_without_imex = "cr3"
 
     cluster_config = pcluster_config_reader(
+        private_subnet_id_for_capacity_block=private_subnet_id_for_capacity_block,
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
         max_queue_size=max_queue_size,
@@ -411,6 +413,7 @@ def test_gb200(
     # Test cluster update with changed topology configuration
     max_queue_size_updated = 2
     updated_cluster_config = pcluster_config_reader(
+        private_subnet_id_for_capacity_block=private_subnet_id_for_capacity_block,
         config_file="pcluster.config.update.yaml",
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
@@ -476,6 +479,7 @@ def test_gb200(
 
     # Test final cluster update to remove topology plugin configuration completely
     final_cluster_config = pcluster_config_reader(
+        private_subnet_id_for_capacity_block=private_subnet_id_for_capacity_block,
         config_file="pcluster.config.final.yaml",
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
