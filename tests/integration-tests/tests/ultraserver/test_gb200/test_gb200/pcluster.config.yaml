@@ -56,7 +56,7 @@ Scheduling:
   - Name: {{ queue_without_imex }}
     ComputeResources:
       - Name: {{ compute_resource_without_imex }}
-        InstanceType: g5g.xlarge
+        InstanceType: m6g.xlarge
         MinCount: 1
         MaxCount: 1
     Networking:
