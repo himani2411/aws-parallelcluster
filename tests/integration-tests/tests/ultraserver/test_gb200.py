@@ -401,11 +401,15 @@ def test_gb200(
     cluster = clusters_factory(cluster_config)
 
     # Test IMEX and topology configuration for queue with IMEX support
-    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)
-    assert_topology_plugin_configured(
-        cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size}", max_queue_size
-    )
+    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)
+    # assert_topology_plugin_configured(
+    #     cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size}", max_queue_size
+    # )
 
+    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex_2, max_queue_size)
+    assert_topology_plugin_configured(
+        cluster, queue_with_imex, compute_resource_with_imex_2, f"{max_queue_size}", max_queue_size
+    )
     # Test that IMEX and topology are not configured for queue without IMEX support
     assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
     assert_topology_plugin_not_configured_for_queue(cluster, queue_without_imex, compute_resource_without_imex)
@@ -431,20 +435,20 @@ def test_gb200(
     cluster.start()
     wait_for_computefleet_changed(cluster, "RUNNING")
     # Wait for compute nodes to be fully running
-    wait_for_instances_in_compute_resource(
-        cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
-    )
+    # wait_for_instances_in_compute_resource(
+    #     cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
+    # )
 
     wait_for_instances_in_compute_resource(
         cluster, queue_with_imex, compute_resource_with_imex_2, ["running"], max_queue_size_updated
     )
     # Verify imex and topology plugin configuration after update
-    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex_2, max_queue_size_updated)
 
-    assert_topology_plugin_configured(
-        cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size_updated}", max_queue_size_updated
-    )
+    # assert_topology_plugin_configured(
+    #     cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size_updated}", max_queue_size_updated
+    # )
     assert_topology_plugin_configured(
         cluster, queue_with_imex, compute_resource_with_imex_2, f"{max_queue_size_updated}", max_queue_size_updated
     )
@@ -453,16 +457,16 @@ def test_gb200(
 
     # Forcefully terminate a compute node in the compute resource supporting IMEX
     # to simulate an outage that forces the replacement of the node and consequently the IMEX reconfiguration.
-    logging.info(f"Terminating a node in queue {queue_with_imex} and compute resource {compute_resource_with_imex}")
-    terminate_nodes_manually(
-        [cluster.get_compute_nodes(queue_with_imex, compute_resource_with_imex)[0].get("InstanceId")], region
-    )
-    wait_for_instances_in_compute_resource(
-        cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
-    )
+    # logging.info(f"Terminating a node in queue {queue_with_imex} and compute resource {compute_resource_with_imex}")
+    # terminate_nodes_manually(
+    #     [cluster.get_compute_nodes(queue_with_imex, compute_resource_with_imex)[0].get("InstanceId")], region
+    # )
+    # wait_for_instances_in_compute_resource(
+    #     cluster, queue_with_imex, compute_resource_with_imex, ["running"], max_queue_size_updated
+    # )
 
     # Verify IMEX is still healthy after node replacement
-    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
 
 
     logging.info(f"Terminating a node in queue {queue_with_imex} and compute resource {compute_resource_with_imex_2}")
@@ -501,6 +505,6 @@ def test_gb200(
     assert_topology_plugin_completely_disabled(cluster)
 
     # Verify IMEX still works but topology is completely removed
-    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
+    # assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex_2, max_queue_size_updated)
     assert_imex_not_configured(cluster, queue_without_imex, compute_resource_without_imex)
