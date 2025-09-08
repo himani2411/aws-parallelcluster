@@ -34,7 +34,7 @@ from tests.common.utils import is_existing_remote_file, read_remote_file, termin
 # This is the capacity block reservation for p6e-gb200.36xlarge.
 # Given the limited availability of this capacity we test this instance type on demand,
 # hardwiring the reservation id here when we need it.
-CAPACITY_BLOCK_RESERVATION_ID = "cr-0e5085200ee2f7f67"
+CAPACITY_BLOCK_RESERVATION_ID = "cr-123456789"
 
 # We use placeholder IPs just to get IMEX started.
 # These values are hardwired in the cookbook.
@@ -673,8 +673,8 @@ def _test_nccl_benchmarks(remote_command_executor, test_datadir, mpi_module, sch
         scheduler_commands.wait_job_completed(job_id)
         scheduler_commands.assert_job_succeeded(job_id)
 
-        result = remote_command_executor.run_remote_command("cat /shared/nccl_tests.out")
-        logging.info(f"Test result is: {result}")
+        result = remote_command_executor.run_remote_command("cat /shared/nccl_tests_{0}.out".format(job_id))
+        logging.info(f"[{job_id}] Test result is: {result}")
 
         # Expected output with NCCL_BENCHMARKS_VERSION='2.10.0', NCCL_VERSION='2.7.8-1' and OFI_NCCL_VERSION='1.1.1':
         #                                                       out-of-place                       in-place
