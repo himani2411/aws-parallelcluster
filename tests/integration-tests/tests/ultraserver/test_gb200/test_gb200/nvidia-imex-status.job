@@ -3,6 +3,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
+#SBATCH --exclusive
 
 LAUNCH_TEMPLATE_ID=$(cat "/etc/chef/dna.json" | jq -r ".cluster.launch_template_id")
 IMEX_CONFIG_FILE="/opt/parallelcluster/shared/nvidia-imex/config_${LAUNCH_TEMPLATE_ID}.cfg"
