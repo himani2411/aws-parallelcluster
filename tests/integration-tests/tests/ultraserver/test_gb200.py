@@ -434,6 +434,8 @@ def test_gb200(
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
+    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)
+
     _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition="q1")
     # _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="q1")
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
@@ -465,7 +467,7 @@ def test_gb200(
     _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands, instance)
 
     # Test IMEX and topology configuration for queue with IMEX support
-    assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size)
+
     assert_topology_plugin_configured(
         cluster, queue_with_imex, compute_resource_with_imex, f"{max_queue_size}", max_queue_size
     )
