@@ -1,6 +1,5 @@
 #!/bin/bash
 #SBATCH --nodes=2
-#SBATCH --exclusive
 
 module load openmpi
 NCCL_VERSION='2.27.7-1'
@@ -22,4 +21,4 @@ mpirun \
 -x NCCL_DEBUG=WARNING \
 -x NCCL_PROTO=simple \
 --mca pml ^cm --mca btl tcp,self --mca btl_tcp_if_exclude lo,docker0 --bind-to none \
-/shared/openmpi/nccl-tests-${NCCL_BENCHMARKS_VERSION}/build/all_reduce_perf -b 8 -e 1G -f 2 -g 1 -c 1 -n 100 > /shared/nccl_tests.out
+/shared/openmpi/nccl-tests-${NCCL_BENCHMARKS_VERSION}/build/all_reduce_perf -b 8 -e 1G -f 2 -g 1 -c 1 -n 100 > /shared/nccl_tests_${SLURM_JOB_ID}.out
