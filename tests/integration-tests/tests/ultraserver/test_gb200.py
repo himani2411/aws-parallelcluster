@@ -484,7 +484,7 @@ def test_gb200(
         config_file="pcluster.config.update.yaml",
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
-        max_queue_size_without_imex=max_queue_size_without_imex,
+        min_queue_size_without_imex=min_queue_size_without_imex,
         max_queue_size=max_queue_size_updated,
         queue_with_imex=queue_with_imex,
         compute_resource_with_imex=compute_resource_with_imex,
@@ -525,13 +525,14 @@ def test_gb200(
     # Verify IMEX is still healthy after node replacement
     assert_imex_healthy(cluster, queue_with_imex, compute_resource_with_imex, max_queue_size_updated)
 
+    min_queue_size_without_imex = 0  # Update MinCount to 0 so that the slurmctld can be restarted.
     # Test final cluster update to remove topology plugin configuration completely
     final_cluster_config = pcluster_config_reader(
         config_file="pcluster.config.final.yaml",
         bucket_name=bucket_name,
         head_node_start_script=headnode_start_filename,
         max_queue_size=max_queue_size_updated,
-        max_queue_size_without_imex=max_queue_size_without_imex,
+        min_queue_size_without_imex=min_queue_size_without_imex,
         queue_with_imex=queue_with_imex,
         compute_resource_with_imex=compute_resource_with_imex,
         queue_without_imex=queue_without_imex,
