@@ -40,6 +40,7 @@ def test_osu(
     instance,
     pcluster_config_reader,
     clusters_factory,
+    s3_bucket_factory,
     test_datadir,
     architecture,
     network_interfaces_count,
