@@ -28,8 +28,8 @@ from tests.common.utils import (
 )
 from tests.performance_tests.common import push_result_to_dynamodb
 
-# We collected OSU benchmarks results for these instance types
-OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge", "p5en.48xlarge", "p6-b200.48xlarge"]
+# We collected OSU benchmarks results for c5n.18xlarge and p6-b200.48xlarge only.
+OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge",  "p5en.48xlarge", "p6-b200.48xlarge", "p6e-gb200.36xlarge"]
 
 
 @pytest.mark.usefixtures("serial_execution_by_instance")
