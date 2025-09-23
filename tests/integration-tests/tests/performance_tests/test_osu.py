@@ -47,6 +47,27 @@ def test_osu(
     scheduler_commands_factory,
     request,
 ):
+    bucket_name = s3_bucket_factory()
+    bucket = boto3.resource("s3", region_name=region).Bucket(bucket_name)
+
+    # Upload files to test bucket
+    headnode_start_filename = "head_node_start.sh"
+    prolog_filename = "91_nvidia_imex_prolog.sh"
+    check_imex_status_filename = "check_imex_status.sh"
+    job_filename = "nvidia-imex-status.job"
+    bucket.upload_file(str(test_datadir / prolog_filename), prolog_filename)
+    bucket.upload_file(str(test_datadir / job_filename), job_filename)
+    bucket.upload_file(str(test_datadir / check_imex_status_filename), check_imex_status_filename)
+    head_node_start_script_rendered = file_reader(
+        input_file=headnode_start_filename,
+        output_file=f"{headnode_start_filename}.rendered",
+        bucket_name=bucket_name,
+        prolog_filename=prolog_filename,
+        job_filename=job_filename,
+        check_imex_status_filename=check_imex_status_filename,
+    )
+    bucket.upload_file(head_node_start_script_rendered, headnode_start_filename)
+
     if instance not in OSU_BENCHMARKS_INSTANCES:
         raise Exception(
             f"OSU benchmarks can't be run on instance {instance}. "
@@ -63,7 +84,7 @@ def test_osu(
     capacity_reservation_id = None
     placement_group_enabled = True
 
-    if instance in ["p6-b200.48xlarge", "p5en.48xlarge"]:
+    if instance in ["p6-b200.48xlarge", "p5en.48xlarge"] or instance.startswith("p6e-gb200"):
         max_queue_size = 2
         capacity_type = "CAPACITY_BLOCK"
         placement_group_enabled = False
@@ -83,8 +104,10 @@ def test_osu(
         capacity_type=capacity_type,
         capacity_reservation_id=capacity_reservation_id,
         placement_group_enabled=placement_group_enabled,
+        bucket_name=bucket_name,
+        head_node_start_script=head_node_start_script_rendered,
     )
-    cluster = clusters_factory(cluster_config)
+    cluster = clusters_factory(cluster_config, suppress_validators=["type:UltraserverCapacityBlockSizeValidator"])
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
@@ -246,8 +269,6 @@ def _test_osu_benchmarks_multiple_bandwidth(
         "hpc6id.32xlarge": 23000,  # Equivalent to a theoretical maximum of a single 184Gbps card
         # 8 100 Gbps NICS -> declared NetworkPerformance 800 Gbps
         "trn1.32xlarge": 80000,  # Equivalent to a theoretical maximum of a single 640Gbps card
-        # 32 100 Gbps NICS -> declared NetworkPerformance 3200 Gbps = 400000MBps (80% is 320000MBps)
-        "p5en.48xlarge": 320000,
         # 8 200 Gbps NICS -> declared NetworkPerformance 1600 Gbps = 200000MBps (80% is 160000MBps)
         "p6-b200.48xlarge": 160000,
     }

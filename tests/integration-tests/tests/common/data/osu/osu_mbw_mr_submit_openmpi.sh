@@ -2,6 +2,11 @@
 set -e
 module load openmpi
 
+# Adding a check to verify IMEX status is UP
+if [ -f "/opt/parallelcluster/shared/check_imex_status.sh" ]; then
+  srun bash -c "source /opt/parallelcluster/shared/check_imex_status.sh; verify_imex_is_up"
+fi
+
 BENCHMARK_NAME={{ benchmark_name }}
 OSU_BENCHMARK_VERSION={{ osu_benchmark_version }}
 

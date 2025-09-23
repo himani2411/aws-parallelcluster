@@ -4,6 +4,9 @@ HeadNode:
   InstanceType: {{ head_node_instance }}
   Networking:
     SubnetId: {{ public_subnet_id }}
+  CustomActions:
+    OnNodeStart:
+      Script: s3://{{ bucket_name }}/{{ head_node_start_script }}
   Ssh:
     KeyName: {{ key_name }}
   Imds:

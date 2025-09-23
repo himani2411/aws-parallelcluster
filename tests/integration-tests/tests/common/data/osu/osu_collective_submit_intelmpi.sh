@@ -8,6 +8,11 @@ NUM_OF_PROCESSES={{ num_of_processes }}
 module load intelmpi
 export I_MPI_DEBUG=10
 
+# Adding a check to verify IMEX status is UP
+if [ -f "/opt/parallelcluster/shared/check_imex_status.sh" ]; then
+  srun bash -c "source /opt/parallelcluster/shared/check_imex_status.sh; verify_imex_is_up"
+fi
+
 {% if network_interfaces_count > 1 %}
 # Multi NICs instances require extra environment variables.
 # See https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa-start-nccl.html
