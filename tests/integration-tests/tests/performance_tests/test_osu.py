@@ -77,7 +77,7 @@ def test_osu(
     if architecture == "x86_64":
         head_node_instance = "c5.18xlarge"
     else:
-        head_node_instance = "c6g.16xlarge"
+        head_node_instance = "m6g.16xlarge"
 
     max_queue_size = 32
     capacity_type = "ONDEMAND"
