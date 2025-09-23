@@ -37,6 +37,7 @@ def test_osu(
     os,
     region,
     scheduler,
+    file_reader,
     instance,
     pcluster_config_reader,
     clusters_factory,
