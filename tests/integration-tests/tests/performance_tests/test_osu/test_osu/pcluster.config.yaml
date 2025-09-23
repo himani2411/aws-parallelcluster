@@ -7,6 +7,9 @@ HeadNode:
   CustomActions:
     OnNodeStart:
       Script: s3://{{ bucket_name }}/{{ head_node_start_script }}
+  Iam:
+    S3Access:
+      - BucketName: {{ bucket_name }}
   Ssh:
     KeyName: {{ key_name }}
   Imds:
