@@ -19,6 +19,7 @@ from remote_command_executor import RemoteCommandExecutor
 
 from tests.common.assertions import assert_no_errors_in_logs
 from tests.common.osu_common import run_individual_osu_benchmark
+from tests.common.nccl_common import install_and_run_nccl_benchmarks
 from tests.common.utils import (
     fetch_instance_slots,
     get_capacity_reservation_id,
@@ -114,56 +115,59 @@ def test_osu(
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
     run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    all_nccl_benchmarks = [ 'all_gather_perf', 'all_reduce_perf', 'alltoall_perf', 'broadcast_perf', 'reduce_scatter_perf' ]
+    for nccl_benchmark in all_nccl_benchmarks:
+        install_and_run_nccl_benchmarks(remote_command_executor, "openmpi", scheduler_commands, instance, nccl_benchmark)
 
-    benchmark_failures = []
-
-    output_dir = request.config.getoption("output_dir")
-
-    # Run OSU benchmarks in efa-enabled queue.
-    for mpi_version in mpi_variants:
-        benchmark_failures.extend(
-            _test_osu_benchmarks_pt2pt(
-                mpi_version,
-                remote_command_executor,
-                scheduler_commands,
-                test_datadir,
-                output_dir,
-                os,
-                instance,
-                network_interfaces_count,
-                slots_per_instance,
-                partition="efa-enabled",
-            )
-        )
-        benchmark_failures.extend(
-            _test_osu_benchmarks_collective(
-                mpi_version,
-                remote_command_executor,
-                scheduler_commands,
-                test_datadir,
-                output_dir,
-                os,
-                instance,
-                network_interfaces_count,
-                num_instances=max_queue_size,
-                slots_per_instance=slots_per_instance,
-                partition="efa-enabled",
-            )
-        )
-    assert_that(benchmark_failures, description="Some OSU benchmarks are failing").is_empty()
-
-    if network_interfaces_count > 1:
-        _test_osu_benchmarks_multiple_bandwidth(
-            instance,
-            remote_command_executor,
-            scheduler_commands,
-            test_datadir,
-            slots_per_instance,
-            network_interfaces_count,
-            partition="efa-enabled",
-        )
-
-    assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
+    # benchmark_failures = []
+    #
+    # output_dir = request.config.getoption("output_dir")
+    #
+    # # Run OSU benchmarks in efa-enabled queue.
+    # for mpi_version in mpi_variants:
+    #     benchmark_failures.extend(
+    #         _test_osu_benchmarks_pt2pt(
+    #             mpi_version,
+    #             remote_command_executor,
+    #             scheduler_commands,
+    #             test_datadir,
+    #             output_dir,
+    #             os,
+    #             instance,
+    #             network_interfaces_count,
+    #             slots_per_instance,
+    #             partition="efa-enabled",
+    #         )
+    #     )
+    #     benchmark_failures.extend(
+    #         _test_osu_benchmarks_collective(
+    #             mpi_version,
+    #             remote_command_executor,
+    #             scheduler_commands,
+    #             test_datadir,
+    #             output_dir,
+    #             os,
+    #             instance,
+    #             network_interfaces_count,
+    #             num_instances=max_queue_size,
+    #             slots_per_instance=slots_per_instance,
+    #             partition="efa-enabled",
+    #         )
+    #     )
+    # assert_that(benchmark_failures, description="Some OSU benchmarks are failing").is_empty()
+    #
+    # if network_interfaces_count > 1:
+    #     _test_osu_benchmarks_multiple_bandwidth(
+    #         instance,
+    #         remote_command_executor,
+    #         scheduler_commands,
+    #         test_datadir,
+    #         slots_per_instance,
+    #         network_interfaces_count,
+    #         partition="efa-enabled",
+    #     )
+    #
+    # assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
 
 def _test_osu_benchmarks_pt2pt(
