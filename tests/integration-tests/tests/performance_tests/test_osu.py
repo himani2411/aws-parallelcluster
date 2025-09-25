@@ -107,7 +107,7 @@ def test_osu(
         capacity_reservation_id=capacity_reservation_id,
         placement_group_enabled=placement_group_enabled,
         bucket_name=bucket_name,
-        head_node_start_script=head_node_start_script_rendered,
+        head_node_start_script=headnode_start_filename,
     )
     cluster = clusters_factory(cluster_config, suppress_validators=["type:UltraserverCapacityBlockSizeValidator"])
     remote_command_executor = RemoteCommandExecutor(cluster)
