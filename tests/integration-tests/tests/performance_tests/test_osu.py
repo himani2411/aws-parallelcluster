@@ -114,7 +114,7 @@ def test_osu(
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
     all_nccl_benchmarks = [ 'all_gather_perf', 'all_reduce_perf', 'alltoall_perf', 'broadcast_perf', 'reduce_scatter_perf' ]
     for nccl_benchmark in all_nccl_benchmarks:
         install_and_run_nccl_benchmarks(remote_command_executor, "openmpi", scheduler_commands, instance, nccl_benchmark)
