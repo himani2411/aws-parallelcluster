@@ -25,7 +25,6 @@ fi
 mpirun \
 -x LD_LIBRARY_PATH=/shared/openmpi/nccl-${NCCL_VERSION}/build/lib/:${OFI_PATH}:$LD_LIBRARY_PATH \
 -x NCCL_DEBUG=WARNING \
--x NCCL_TESTS_SPLIT_MASK=0x0 \
 -x NCCL_SOCKET_FAMILY=AF_INET \
 -x RDMAV_FORK_SAFE=1 \
 --bind-to none \
