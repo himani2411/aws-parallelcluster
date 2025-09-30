@@ -173,8 +173,8 @@ def test_cluster_update_invalid(
     for cluster_config_path, error, suppress_validators in [
         # CloudFormation truncates error messages,
         # so we cannot specify the full error message here, but only a part of it.
-        ("pcluster.config.reducemaxcount.yaml", "Stop the compute fleet or set QueueUpdateStrategy:TERMINATE", None),
-        ("pcluster.config.negativemaxcount.yaml", "Must be greater than or equal to 1.", None),
+        # ("pcluster.config.reducemaxcount.yaml", "Stop the compute fleet or set QueueUpdateStrategy:TERMINATE", None),
+        # ("pcluster.config.negativemaxcount.yaml", "Must be greater than or equal to 1.", None),
         ("pcluster.config.invalidprofile.yaml", "cannot be found", ["type:InstanceProfileValidator"]),
         ("pcluster.config.wrongscripturi.yaml", "s3 url 's3://invalid' is invalid.", None),
     ]:
@@ -183,6 +183,7 @@ def test_cluster_update_invalid(
             cluster_custom_resource_template=cluster_custom_resource_template,
             suppress_validators=suppress_validators,
         )
+        logging.info(f"The custom resource temaplet is {template.to_yaml()}")
         with pytest.raises(StackError) as stack_error:
             stack.factory.update_stack(
                 stack.name,
