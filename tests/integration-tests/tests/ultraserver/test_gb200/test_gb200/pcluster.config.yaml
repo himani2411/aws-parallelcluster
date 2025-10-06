@@ -28,6 +28,10 @@ Scheduling:
       CapacityReservationId: {{ capacity_block_reservation_id }}
     {% endif %}
     ComputeResources:
+      - Name: cr2
+        InstanceType: {{ instance }}
+        MinCount: {{ max_queue_size }}
+        MaxCount: {{ max_queue_size }}
       - Name: {{ compute_resource_with_imex }}
         InstanceType: {{ instance }}
         MinCount: {{ max_queue_size }}
