@@ -899,6 +899,7 @@ def _get_default_template_values(vpc_stack: CfnVpcStack, request):
     default_values["public_subnet_ids"] = vpc_stack.get_all_public_subnets()
     default_values["private_subnet_id"] = vpc_stack.get_private_subnet()
     default_values["private_subnet_ids"] = vpc_stack.get_all_private_subnets()
+    default_values["isolated_subnet_id"] = vpc_stack.get_private_isolated_subnet()
     default_values.update({dimension: request.node.funcargs.get(dimension) for dimension in DIMENSIONS_MARKER_ARGS})
     default_values["partition"] = get_arn_partition(default_values["region"])
     default_values["key_name"] = request.config.getoption("key_name")

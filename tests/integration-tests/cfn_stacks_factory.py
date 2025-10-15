@@ -102,6 +102,10 @@ class CfnVpcStack(CfnStack):
         """Return the private subnet for a VPC stack."""
         return self._get_subnet(visibility="Private")
 
+    def get_private_isolated_subnet(self):
+        """Return the private isolated subnet for a VPC stack."""
+        return self.cfn_outputs["PrivateIsolatedSubnetId"]
+
     def get_all_private_subnets(self):
         """Return all the private subnets for a VPC stack."""
         if not self.__private_subnet_ids:
