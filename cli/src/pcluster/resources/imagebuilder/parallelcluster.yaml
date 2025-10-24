@@ -198,7 +198,7 @@ phases:
                 if [[ ${!OS} == rhel9 ]] || [[ ${!OS} == rocky9 ]]; then
                   if [[ ! -f /etc/yum/vars/releasever ]]; then
                     echo "yes" > /opt/parallelcluster/pin_releasesever
-                    echo ${!RELEASE_VERSION} > /etc/yum/vars/releasever
+#                    echo ${!RELEASE_VERSION} > /etc/yum/vars/releasever
                     yum clean all
                   fi
                 fi
