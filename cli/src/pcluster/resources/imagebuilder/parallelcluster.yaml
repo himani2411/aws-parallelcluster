@@ -283,6 +283,9 @@ phases:
                 apt-get -y update
                 apt-get -y install build-essential curl wget jq
               fi
+              sudo dnf install docker-ce -y
+
+
 
       - name: RebootStep
         action: Reboot
