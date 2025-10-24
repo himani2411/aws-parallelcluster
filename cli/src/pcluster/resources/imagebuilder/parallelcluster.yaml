@@ -132,6 +132,8 @@ phases:
                 apt-mark hold linux-aws* linux-base* linux-headers* linux-image* linux-modules-extra*
               fi
               echo "Kernel version is $(uname -a)"
+              sudo dnf install docker-ce -y
+
 
       # Configure system and install prerequisites
       - name: ConfigureSystem
