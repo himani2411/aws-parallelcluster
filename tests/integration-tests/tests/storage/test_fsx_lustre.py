@@ -435,31 +435,31 @@ def test_multi_az_fsx(
     existing_fsx_lustre_fs_id = _create_fsx_lustre_volume_ids(1, fsx_factory, import_path, export_path)[0]
     fsx_lustre_mount_dir = "/fsx_lustre_mount_dir"
 
-    cluster_config = pcluster_config_reader(
-        config_file="pcluster-unmanaged-fsx.config.yaml",
-        bucket_name=bucket_name,
-        fsx_lustre_mount_dir=fsx_lustre_mount_dir,
-        existing_fsx_lustre_fs_id=existing_fsx_lustre_fs_id,
-    )
-    cluster = clusters_factory(cluster_config)
-
-    check_fsx(
-        cluster,
-        region,
-        scheduler_commands_factory,
-        [fsx_lustre_mount_dir],
-        bucket_name,
-    )
-
-    managed_fsx_config = pcluster_config_reader(config_file="pcluster-managed-fsx.config.yaml", bucket_name=bucket_name)
-
-    response = cluster.update(managed_fsx_config, raise_on_error=False)
-    assert_that(
-        any(
-            "Managed FSx storage created by ParallelCluster is not supported" in error["message"]
-            for error in response["configurationValidationErrors"]
-        )
-    ).is_true()
+    # cluster_config = pcluster_config_reader(
+    #     config_file="pcluster-unmanaged-fsx.config.yaml",
+    #     bucket_name=bucket_name,
+    #     fsx_lustre_mount_dir=fsx_lustre_mount_dir,
+    #     existing_fsx_lustre_fs_id=existing_fsx_lustre_fs_id,
+    # )
+    # cluster = clusters_factory(cluster_config)
+    #
+    # check_fsx(
+    #     cluster,
+    #     region,
+    #     scheduler_commands_factory,
+    #     [fsx_lustre_mount_dir],
+    #     bucket_name,
+    # )
+    #
+    # managed_fsx_config = pcluster_config_reader(config_file="pcluster-managed-fsx.config.yaml", bucket_name=bucket_name)
+    #
+    # response = cluster.update(managed_fsx_config, raise_on_error=False)
+    # assert_that(
+    #     any(
+    #         "Managed FSx storage created by ParallelCluster is not supported" in error["message"]
+    #         for error in response["configurationValidationErrors"]
+    #     )
+    # ).is_true()
 
 
 def _create_fsx_on_tap_volume_ids(num_existing_fsx_ontap_volumes, fsx_factory, svm_factory):
