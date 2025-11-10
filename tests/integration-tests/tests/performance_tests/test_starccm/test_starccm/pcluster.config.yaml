@@ -64,6 +64,3 @@ SharedStorage:
       DeploymentType: PERSISTENT_1
       PerUnitStorageThroughput: 100
       StorageType: SSD
-DevSettings:
-  Cookbook:
-    ChefCookbook: https://us-east-1-aws-parallelcluster.s3.us-east-1.amazonaws.com/patches/3.14.0/disable-cfnhup-on-compute-nodes/aws-parallelcluster-cookbook-3.14.0.tgz
