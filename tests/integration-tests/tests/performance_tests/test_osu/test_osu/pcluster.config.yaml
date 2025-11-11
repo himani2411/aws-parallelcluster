@@ -38,3 +38,7 @@ SharedStorage:
   - MountDir: /shared
     Name: name1
     StorageType: Ebs
+DevSettings:
+  Cookbook:
+    ExtraChefAttributes: |
+      { "cluster" : { "in_place_update_on_fleet_enabled" : "false" } }
