@@ -12,10 +12,12 @@
 import datetime
 import json
 import logging
+import os
 import re
 import tarfile
 import tempfile
 import time
+import urllib.request
 
 import boto3
 import pytest
@@ -125,6 +127,9 @@ def test_build_image(
     # Get custom S3 bucket
     bucket_name = s3_bucket_factory()
     _set_s3_bucket_policy(bucket_name, get_arn_partition(region), region)
+    
+    # Upload ParallelCluster Artifacts in S3 and use that in DevSettings
+    dev_settings = _upload_github_artifacts_to_s3(bucket_name, region, request)
 
     enable_nvidia = True
     update_os_packages = False
@@ -165,6 +170,7 @@ def test_build_image(
         enable_nvidia=str(enable_nvidia and get_gpu_count(instance) > 0).lower(),
         update_os_packages=str(update_os_packages).lower(),
         enable_lustre_client=str(enable_lustre_client).lower(),
+        dev_settings=dev_settings,
     )
 
     image = images_factory(image_id, image_config, region)
@@ -212,6 +218,48 @@ def _test_cluster_creation(image_id, pcluster_config_reader, region, clusters_fa
     scheduler_commands.assert_job_succeeded(job_id, children_number=node_number)
 
     assert_no_msg_in_logs(remote_command_executor, ["/var/log/slurmctld.log"], ["launch failure"])
+
+
+def _upload_github_artifacts_to_s3(bucket_name, region, request):
+    """Upload GitHub repository tarballs to S3 for DevSettings."""
+    dev_settings = {"TerminateInstanceOnFailure": True}
+    
+    # Get custom URLs from request config options
+    custom_urls = {
+        "aws-parallelcluster": request.config.getoption('pcluster_git_ref') or 'develop',
+        "aws-parallelcluster-cookbook": request.config.getoption('cookbook_git_ref') or 'develop', 
+        "aws-parallelcluster-node": request.config.getoption('node_git_ref') or 'develop'
+    }
+    
+    # Only upload cookbooks if region is in China partition
+    if region.startswith("cn-"):
+        s3_client = boto3.client("s3", region_name=region)
+        
+        repos = [
+            ("aws-parallelcluster", "aws/aws-parallelcluster"),
+            ("aws-parallelcluster-cookbook", "aws/aws-parallelcluster-cookbook"),
+            ("aws-parallelcluster-node", "aws/aws-parallelcluster-node")
+        ]
+        
+        for repo_name, repo_path in repos:
+            custom_url = custom_urls[repo_name]
+            tarball_url = f"https://github.com/{repo_path}/tarball/{custom_url}"
+            
+            with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp_file:
+                urllib.request.urlretrieve(tarball_url, tmp_file.name)
+                s3_key = f"artifacts/{repo_name}-{custom_url}.tar.gz"
+                s3_client.upload_file(tmp_file.name, bucket_name, s3_key)
+                os.unlink(tmp_file.name)
+                
+                # Map to correct DevSettings structure
+                if repo_name == "aws-parallelcluster":
+                    dev_settings["AwsBatchCliPackage"] = f"s3://{bucket_name}/{s3_key}"
+                elif repo_name == "aws-parallelcluster-cookbook":
+                    dev_settings["Cookbook"] = {"ChefCookbook": f"s3://{bucket_name}/{s3_key}"}
+                elif repo_name == "aws-parallelcluster-node":
+                    dev_settings["NodePackage"] = f"s3://{bucket_name}/{s3_key}"
+    
+    return dev_settings
 
 
 @retry(
