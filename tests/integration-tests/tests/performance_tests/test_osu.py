@@ -108,7 +108,7 @@ def test_osu(
     benchmark_failures = []
 
     output_dir = request.config.getoption("output_dir")
-    output_folder_path=f"{output_dir}/{request.node.name}/osu-results"
+
     # Run OSU benchmarks in efa-enabled queue.
     for mpi_version in mpi_variants:
         benchmark_failures.extend(
@@ -117,7 +117,7 @@ def test_osu(
                 remote_command_executor,
                 scheduler_commands,
                 test_datadir,
-                output_folder_path,
+                output_dir,
                 os,
                 instance,
                 network_interfaces_count,
@@ -131,7 +131,7 @@ def test_osu(
                 remote_command_executor,
                 scheduler_commands,
                 test_datadir,
-                output_folder_path,
+                output_dir,
                 os,
                 instance,
                 network_interfaces_count,
@@ -148,7 +148,7 @@ def test_osu(
             remote_command_executor,
             scheduler_commands,
             test_datadir,
-            output_folder_path,
+            output_dir,
             os,
             slots_per_instance,
             network_interfaces_count,
@@ -164,7 +164,7 @@ def _test_osu_benchmarks_pt2pt(
     remote_command_executor,
     scheduler_commands,
     test_datadir,
-    output_folder_path,
+    output_dir,
     os,
     instance,
     network_interfaces_count,
@@ -193,7 +193,7 @@ def _test_osu_benchmarks_pt2pt(
             test_datadir,
         )
         failures = _check_osu_benchmarks_results(
-            test_datadir, output_folder_path, os, instance, mpi_version, benchmark_name, output
+            test_datadir, output_dir, os, instance, mpi_version, benchmark_name, output
         )
         if failures > accepted_number_of_failures:
             failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
@@ -206,7 +206,7 @@ def _test_osu_benchmarks_collective(
     remote_command_executor,
     scheduler_commands,
     test_datadir,
-    output_folder_path,
+    output_dir,
     os,
     instance,
     network_interfaces_count,
@@ -234,7 +234,7 @@ def _test_osu_benchmarks_collective(
             timeout=24,
         )
         failures = _check_osu_benchmarks_results(
-            test_datadir, output_folder_path, os, instance, mpi_version, benchmark_name, output
+            test_datadir, output_dir, os, instance, mpi_version, benchmark_name, output
         )
         if failures > accepted_number_of_failures:
             failed_benchmarks.append(f"{mpi_version}-{benchmark_name}")
@@ -247,7 +247,7 @@ def _test_osu_benchmarks_multiple_bandwidth(
     remote_command_executor,
     scheduler_commands,
     test_datadir,
-    output_folder_path,
+    output_dir,
     os,
     slots_per_instance,
     network_interfaces_count,
@@ -297,7 +297,7 @@ def _test_osu_benchmarks_multiple_bandwidth(
 
     logging.info(output)
     write_file(
-        dirname=output_folder_path,
+        dirname=f"{output_dir}/osu-results",
         filename=f"{os}-{instance}-{mpi_version}-{benchmark_name}.out",
         content=output,
     )
@@ -313,10 +313,10 @@ def _test_osu_benchmarks_multiple_bandwidth(
     assert_that(float(max_bandwidth)).is_greater_than(expected_bandwidth)
 
 
-def _check_osu_benchmarks_results(test_datadir, output_folder_path, os, instance, mpi_version, benchmark_name, output):
+def _check_osu_benchmarks_results(test_datadir, output_dir, os, instance, mpi_version, benchmark_name, output):
     logging.info(output)
     write_file(
-        dirname=f"{output_folder_path}",
+        dirname=f"{output_dir}/osu-results",
         filename=f"{os}-{instance}-{mpi_version}-{benchmark_name}.out",
         content=output,
     )
@@ -383,7 +383,7 @@ def _check_osu_benchmarks_results(test_datadir, output_folder_path, os, instance
             else:
                 logging.info(message)
     write_file(
-        dirname=f"{output_folder_path}",
+        dirname=f"{output_dir}/osu-results",
         filename=f"{os}-{instance}-{mpi_version}-{benchmark_name}-evaluation.out",
         content=evaluation_output,
     )
