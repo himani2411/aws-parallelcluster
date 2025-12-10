@@ -12,6 +12,7 @@
 import json
 import logging
 import re
+import time
 
 import boto3
 import pytest
@@ -50,10 +51,6 @@ def test_osu(
     scheduler_commands_factory,
     request,
 ):
-    if in_place_update_on_fleet_enabled == "true":
-        message = f"Skipping the test as we want to compare performance when cfn-hup is disabled"
-        logging.warn(message)
-        pytest.skip(message)
 
     if instance not in OSU_BENCHMARKS_INSTANCES:
         raise Exception(
@@ -151,6 +148,7 @@ def test_osu(
         )
 
     assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
+    time.sleep(10*60)
 
 
 def _test_osu_benchmarks_pt2pt(
