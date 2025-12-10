@@ -1,0 +1,8 @@
+{
+  "droplet-queue": {
+    "droplet-comp-res": {
+      "AdditionalInfo": "ignore-no-launches=true,target-droplet=30.224.249.81",
+      "InstanceType": "t3.medium"
+    }
+  }
+}

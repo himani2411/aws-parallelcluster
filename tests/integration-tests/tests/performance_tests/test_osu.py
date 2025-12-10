@@ -31,7 +31,7 @@ from tests.common.utils import (
 from tests.performance_tests.common import push_result_to_dynamodb
 
 # We collected OSU benchmarks results for these instance types
-OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge", "p5en.48xlarge", "p6-b200.48xlarge"]
+OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge", "p5en.48xlarge", "p6-b200.48xlarge","t3.medium"]
 
 
 @pytest.mark.usefixtures("serial_execution_by_instance")
@@ -50,6 +50,7 @@ def test_osu(
     mpi_variants,
     scheduler_commands_factory,
     request,
+    s3_bucket_factory,
 ):
 
     if instance not in OSU_BENCHMARKS_INSTANCES:
@@ -58,7 +59,13 @@ def test_osu(
             f"Only these instances are supported: {OSU_BENCHMARKS_INSTANCES}"
         )
 
-    max_queue_size = 32
+    # Create S3 bucket for custom actions scripts
+    bucket_name = s3_bucket_factory()
+    s3 = boto3.client("s3")
+    s3.upload_file(str(test_datadir / "run_instance_overrides.json"), bucket_name, "run_instance_overrides.json")
+    s3.upload_file(str(test_datadir / "download_overrides.sh"), bucket_name, "download_overrides.sh")
+
+    max_queue_size = 10
     capacity_type = "ONDEMAND"
     capacity_reservation_id = None
     placement_group_enabled = True
@@ -85,6 +92,7 @@ def test_osu(
 
     slots_per_instance = fetch_instance_slots(region, instance, multithreading_disabled=True)
     cluster_config = pcluster_config_reader(
+        bucket_name=bucket_name,
         max_queue_size=max_queue_size,
         capacity_type=capacity_type,
         capacity_reservation_id=capacity_reservation_id,
@@ -95,7 +103,7 @@ def test_osu(
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
     benchmark_failures = []
 

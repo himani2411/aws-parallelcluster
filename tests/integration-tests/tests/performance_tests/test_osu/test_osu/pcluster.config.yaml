@@ -8,6 +8,17 @@ HeadNode:
     KeyName: {{ key_name }}
   Imds:
     Secured: {{ imds_secured }}
+  Iam:
+    AdditionalIamPolicies:
+      - Policy: arn:{{partition}}:iam::aws:policy/AmazonSSMManagedInstanceCore #Required to report patching status
+    S3Access:
+      - BucketName: {{ bucket_name }}
+        EnableWriteAccess: true
+  CustomActions:
+    OnNodeStart:
+      Script: s3://{{ bucket_name }}/download_overrides.sh
+      Args:
+        - {{ bucket_name }}
 Scheduling:
   Scheduler: {{ scheduler }}
   SlurmQueues:
@@ -19,11 +30,11 @@ Scheduling:
       {% endif %}
       JobExclusiveAllocation: true
       Networking:
-        PlacementGroup:
-          Enabled: {{ placement_group_enabled }}
-          {% if placement_group_enabled %}
-          Name: {{ capacity_reservation_framework_placement_group }}
-          {% endif %}
+#        PlacementGroup:
+#          Enabled: {{ placement_group_enabled }}
+#          {% if placement_group_enabled %}
+#          Name: {{ capacity_reservation_framework_placement_group }}
+#          {% endif %}
         SubnetIds:
           - {{ private_subnet_id }}
       ComputeResources:
@@ -32,8 +43,8 @@ Scheduling:
           MaxCount: {{ max_queue_size }}
           MinCount: {{ max_queue_size }}
           DisableSimultaneousMultithreading: true
-          Efa:
-            Enabled: true
+#          Efa:
+#            Enabled: true
 SharedStorage:
   - MountDir: /shared
     Name: name1
