@@ -51,7 +51,7 @@ def test_efa(
     max_queue_size = 32 if instance in osu_benchmarks_instances else 2
 
     if architecture == "x86_64":
-        head_node_instance = "c5.18xlarge"
+        head_node_instance = "c5n.18xlarge"
     else:
         head_node_instance = "c6g.16xlarge"
 
