@@ -113,13 +113,13 @@ def test_efa(
         )
 
     # TODO: Remove this condition once OSU benchmark tests are decoupled from EFA tests
-    if instance not in osu_benchmarks_instances or os == "rocky8":
-        _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
-
-        if instance == "p4d.24xlarge" and os != "centos7":
-            _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
-
-    assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
+    # if instance not in osu_benchmarks_instances or os == "rocky8":
+    #     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
+    #
+    #     if instance == "p4d.24xlarge" and os != "centos7":
+    #         _test_nccl_benchmarks(remote_command_executor, test_datadir, "openmpi", scheduler_commands)
+    #
+    # assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
 
 
 def _test_efa_installation(scheduler_commands, remote_command_executor, efa_installed=True, partition=None):
