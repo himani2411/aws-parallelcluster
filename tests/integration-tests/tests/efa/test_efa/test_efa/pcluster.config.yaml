@@ -16,7 +16,7 @@ Scheduling:
       Networking:
         PlacementGroup:
           Enabled: true
-          Name: c5n.18xlarge_placement_group_{{ region }}
+          Name: c5n.18xlarge_placement_group_usw2-az3
         SubnetIds:
           - {{ private_subnet_id }}
       ComputeResources:
