@@ -20,7 +20,7 @@ Scheduling:
       {% endif %}
       Networking:
         PlacementGroup:
-          Enabled: {% if instance not in ["p4d.24xlarge", "p6-b200.48xlarge"] %}true{% else %}false{% endif %}
+          Enabled: {% if not instance.startswith('p') %}true{% else %}false{% endif %}
           {% if instance in ["c5n.18xlarge", "c6gn.16xlarge"] %}Name: {{ capacity_reservation_framework_placement_group }}{% endif %}
         SubnetIds:
           - {{ private_subnet_id }}
