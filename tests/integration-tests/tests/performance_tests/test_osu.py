@@ -28,7 +28,7 @@ from tests.common.utils import (
 from tests.performance_tests.common import push_result_to_dynamodb
 
 # We collected OSU benchmarks results for these instance types
-OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge", "p5en.48xlarge", "p6-b200.48xlarge"]
+OSU_BENCHMARKS_INSTANCES = ["c5n.18xlarge", "p5en.48xlarge", "p6-b200.48xlarge", "p6-b300.48xlarge"]
 
 
 @pytest.mark.usefixtures("serial_execution_by_instance")
@@ -67,7 +67,7 @@ def test_osu(
     chef_attributes_dict = {"cluster": {"in_place_update_on_fleet_enabled": in_place_update_on_fleet_enabled}}
     extra_chef_attributes = json.dumps(chef_attributes_dict)
 
-    if instance in ["p6-b200.48xlarge", "p5en.48xlarge"]:
+    if instance in ["p6-b200.48xlarge", "p6-b300.48xlarge", "p5en.48xlarge"]:
         max_queue_size = 2
         capacity_type = "CAPACITY_BLOCK"
         placement_group_enabled = False
@@ -92,7 +92,7 @@ def test_osu(
     remote_command_executor = RemoteCommandExecutor(cluster)
     scheduler_commands = scheduler_commands_factory(remote_command_executor)
 
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
     benchmark_failures = []
 
@@ -263,6 +263,7 @@ def _test_osu_benchmarks_multiple_bandwidth(
         "p5en.48xlarge": 320000,
         # 8 200 Gbps NICS -> declared NetworkPerformance 3200 Gbps = 400000MBps (acceptable is 58% ~= 232000 MBps)
         "p6-b200.48xlarge": 232000,
+        "p6-b300.48xlarge": 232000,
     }
     num_instances = 2
     mpi_version = "openmpi"
