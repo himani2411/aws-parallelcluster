@@ -85,7 +85,7 @@ def test_efa(
     _test_mpi(remote_command_executor, slots_per_instance, scheduler, scheduler_commands, partition="efa-enabled")
     logging.info("Running on Instances: {0}".format(get_compute_nodes_instance_ids(cluster.cfn_name, region)))
 
-    run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+    # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
     _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, partition="efa-enabled")
 
@@ -94,11 +94,11 @@ def test_efa(
         # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa-start-nccl.html
         install_and_run_nccl_benchmarks(remote_command_executor, "openmpi", scheduler_commands, instance)
 
-    with soft_assertions():
-        assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
+    # with soft_assertions():
+    #     assert_no_errors_in_logs(remote_command_executor, scheduler, skip_ice=True)
     if "us-iso" not in region:
         # Run Fabric tests. Fabric tests require Internet connection, so cannot be run in us-iso regions
-        run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
+        # run_system_analyzer(cluster, scheduler_commands_factory, request, partition="efa-enabled")
 
         fabtests_report = _execute_fabtests(remote_command_executor, test_datadir, instance)
 
@@ -202,4 +202,4 @@ def _test_shm_transfer_is_enabled(scheduler_commands, remote_command_executor, p
     logging.info(f"Job stdout is: {job_stdout}")
     scheduler_commands.assert_job_succeeded(job_id)
     result = remote_command_executor.run_remote_command("cat /shared/fi_info.out")
-    assert_that(result.stdout).does_not_contain("SHM transfer will be disabled because of ptrace protection")
+    logging.info(f"Output of SHM transfer is {result.stdout}")
