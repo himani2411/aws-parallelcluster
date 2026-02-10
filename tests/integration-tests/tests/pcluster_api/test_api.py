@@ -28,6 +28,7 @@ from pcluster_client.api import (
     cluster_compute_fleet_api,
     cluster_instances_api,
     cluster_operations_api,
+    image_logs_api,
     image_operations_api,
 )
 from pcluster_client.exceptions import NotFoundException
@@ -46,7 +47,7 @@ from troposphere.template_generator import TemplateGenerator
 from utils import generate_stack_name
 
 from tests.common.assertions import wait_for_num_instances_in_cluster
-from tests.common.utils import get_installed_parallelcluster_version, retrieve_latest_ami
+from tests.common.utils import get_installed_parallelcluster_base_version, get_installed_parallelcluster_version, retrieve_latest_ami
 
 LOGGER = logging.getLogger(__name__)
 NUM_OF_COMPUTE_INSTANCES = 2
@@ -577,6 +578,8 @@ def test_custom_image(region, api_client, build_image, os, request, pcluster_con
     with open(config_file, encoding="utf-8") as config_file:
         config = config_file.read()
 
+    logging.info(f"Build Image config used for testing is {config}")
+
     image_id = generate_stack_name("integ-tests-build-image", request.config.getoption("stackname_suffix"))
     client = image_operations_api.ImageOperationsApi(api_client)
 
@@ -585,10 +588,9 @@ def test_custom_image(region, api_client, build_image, os, request, pcluster_con
     _test_describe_image(region, client, image_id, "BUILD_IN_PROGRESS")
     _test_list_images(region, client, image_id, "PENDING")
 
-    # CFN stack is deleted as soon as image is available
-    _cloudformation_wait(region, image_id, "stack_delete_complete")
+    # Poll image status until build completes, capturing logs before stack deletion if it fails
+    _wait_for_image_build_success(api_client, client, image_id, region)
 
-    _test_describe_image(region, client, image_id, "BUILD_COMPLETE")
     _test_list_images(region, client, image_id, "AVAILABLE")
 
     _delete_image(region, client, image_id)
@@ -600,11 +602,13 @@ def _test_build_image(client, build_image, image_id, config):
     assert_that(response.image.image_id).is_equal_to(image_id)
 
 
-def _test_describe_image(region, client, image_id, status):
+def _test_describe_image(region, client, image_id, status=None):
     response = client.describe_image(image_id, region=region)
     LOGGER.info("Describe image response: %s", response)
     assert_that(response.image_id).is_equal_to(image_id)
-    assert_that(response.image_build_status).is_equal_to(ImageBuildStatus(status))
+    if status:
+        assert_that(response.image_build_status).is_equal_to(ImageBuildStatus(status))
+    return response
 
 
 def _test_list_images(region, client, image_id, status):
@@ -635,3 +639,33 @@ def _delete_image(region, client, image_id):
     error_message = f"No image or stack associated with ParallelCluster image id: {image_id}."
     with pytest.raises(NotFoundException, match=error_message):
         client.describe_image(image_id, region=region)
+
+
+def _wait_for_image_build_success(api_client, client, image_id, region):
+    """Poll image build status, capturing logs before stack deletion if the build fails."""
+    logging.info("Waiting for image build to complete for %s.", image_id)
+
+    response = _test_describe_image(region, client, image_id)
+    image_status = str(response.image_build_status)
+
+    while image_status.endswith("_IN_PROGRESS"):
+        time.sleep(180)
+        response = _test_describe_image(region, client, image_id)
+        image_status = str(response.image_build_status)
+
+    if image_status != "BUILD_COMPLETE":
+        _keep_recent_logs(api_client, image_id, region)
+    assert_that(response.image_build_status).is_equal_to(ImageBuildStatus("BUILD_COMPLETE"))
+
+
+def _keep_recent_logs(api_client, image_id, region):
+    """Keep last 200 lines of log to the console when building an image fails."""
+    try:
+        log_stream_name = f"{get_installed_parallelcluster_base_version()}/1"
+        logs_client = image_logs_api.ImageLogsApi(api_client)
+        failure_logs = logs_client.get_image_log_events(
+            image_id, log_stream_name, region=region, start_from_head=False, limit=200
+        )
+        logging.info(f"Image build failed for {image_id}, the last 200 lines of the log are: {failure_logs}")
+    except Exception as e:
+        logging.warning(f"Failed to retrieve build logs for {image_id}: {e}")
