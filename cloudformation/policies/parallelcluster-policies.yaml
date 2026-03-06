@@ -594,6 +594,8 @@ Resources:
               - autoscaling:DescribeScalingActivities
               - autoscaling:PutLifecycleHook
               - autoscaling:UpdateAutoScalingGroup
+              - autoscaling:DeleteTags
+              - autoscaling:CreateOrUpdateTags
               - elasticloadbalancing:CreateListener
               - elasticloadbalancing:CreateTargetGroup
               - elasticloadbalancing:DescribeTags
