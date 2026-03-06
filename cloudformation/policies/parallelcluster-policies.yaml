@@ -570,6 +570,7 @@ Resources:
               - logs:DescribeMetricFilters
               - logs:PutMetricFilter
               - logs:deleteMetricFilter
+              - logs:ListTagsForResource
             Resource: '*'
             Effect: Allow
             Condition: !If
@@ -595,8 +596,9 @@ Resources:
               - autoscaling:UpdateAutoScalingGroup
               - elasticloadbalancing:CreateListener
               - elasticloadbalancing:CreateTargetGroup
-              - elasticloadbalancing:ModifyTargetGroup
               - elasticloadbalancing:DescribeTags
+              - elasticloadbalancing:RemoveTags
+              - elasticloadbalancing:ModifyTargetGroup
               - elasticloadbalancing:DeleteListener
               - elasticloadbalancing:DeleteLoadBalancer
               - elasticloadbalancing:DeleteTargetGroup
