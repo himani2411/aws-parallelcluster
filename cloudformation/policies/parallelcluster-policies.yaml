@@ -595,6 +595,7 @@ Resources:
               - autoscaling:UpdateAutoScalingGroup
               - elasticloadbalancing:CreateListener
               - elasticloadbalancing:CreateTargetGroup
+              - elasticloadbalancing:ModifyTargetGroup
               - elasticloadbalancing:DescribeTags
               - elasticloadbalancing:DeleteListener
               - elasticloadbalancing:DeleteLoadBalancer

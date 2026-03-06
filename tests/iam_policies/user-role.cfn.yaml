@@ -825,7 +825,8 @@ Resources:
               - elasticloadbalancing:DescribeLoadBalancers
               - elasticloadbalancing:DescribeTargetGroups
               - elasticloadbalancing:DescribeTargetHealth
-              - elasticloadbalancing:ModifyLoadBalancerAttributes
+              - elasticloadbalancing:ModifyLoadBalancerAttributes,
+              - elasticloadbalancing:ModifyTargetGroup
               - ec2:GetSecurityGroupsForVpc
             Resource: '*'
             Effect: Allow
