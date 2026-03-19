@@ -145,6 +145,16 @@ Resources:
       SubnetIds:
         - !Ref PrivateSubnet
 
+  ImageBuilderEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Sub com.amazonaws.${AWS::Region}.imagebuilder
+      VpcEndpointType: Interface
+      PrivateDnsEnabled: true
+      VpcId: !Ref Vpc
+      SubnetIds:
+        - !Ref PrivateSubnet
+
   # SECURITY GROUPS
   ProxySecurityGroup:
     Type: AWS::EC2::SecurityGroup
