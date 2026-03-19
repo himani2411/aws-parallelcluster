@@ -8,7 +8,7 @@ Parameters:
 
 Resources:
 
-  # VPC
+  # VPC with IPv6
   Vpc:
     Type: AWS::EC2::VPC
     Properties:
@@ -18,6 +18,12 @@ Resources:
       Tags:
         - Key: Name
           Value: BuildImageNoInternetVPC
+
+  VpcIpv6Cidr:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties:
+      VpcId: !Ref Vpc
+      AmazonProvidedIpv6CidrBlock: true
 
   VpcIGW:
     Type: AWS::EC2::InternetGateway
@@ -31,9 +37,12 @@ Resources:
   # PUBLIC SUBNET (proxy lives here)
   PublicSubnet:
     Type: AWS::EC2::Subnet
+    DependsOn: VpcIpv6Cidr
     Properties:
       AvailabilityZone: !Sub ${AWS::Region}a
       CidrBlock: 10.0.0.0/24
+      Ipv6CidrBlock: !Select [0, !Cidr [!Select [0, !GetAtt Vpc.Ipv6CidrBlocks], 4, 64]]
+      AssignIpv6AddressOnCreation: true
       MapPublicIpOnLaunch: true
       VpcId: !Ref Vpc
 
@@ -56,12 +65,23 @@ Resources:
       GatewayId: !Ref VpcIGW
       RouteTableId: !Ref PublicSubnetRT
 
+  PublicSubnetRouteIpv6:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGWA
+    Properties:
+      DestinationIpv6CidrBlock: ::/0
+      GatewayId: !Ref VpcIGW
+      RouteTableId: !Ref PublicSubnetRT
+
   # PRIVATE SUBNET (build instance lives here, no internet)
   PrivateSubnet:
     Type: AWS::EC2::Subnet
+    DependsOn: VpcIpv6Cidr
     Properties:
       AvailabilityZone: !Sub ${AWS::Region}a
       CidrBlock: 10.0.1.0/24
+      Ipv6CidrBlock: !Select [1, !Cidr [!Select [0, !GetAtt Vpc.Ipv6CidrBlocks], 4, 64]]
+      AssignIpv6AddressOnCreation: true
       MapPublicIpOnLaunch: false
       VpcId: !Ref Vpc
 
@@ -82,6 +102,14 @@ Resources:
     DependsOn: Proxy
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
+      InstanceId: !Ref Proxy
+      RouteTableId: !Ref PrivateSubnetRT
+
+  PrivateSubnetRouteIpv6:
+    Type: AWS::EC2::Route
+    DependsOn: Proxy
+    Properties:
+      DestinationIpv6CidrBlock: ::/0
       InstanceId: !Ref Proxy
       RouteTableId: !Ref PrivateSubnetRT
 
@@ -163,12 +191,16 @@ Resources:
       SecurityGroupIngress:
         - CidrIp: 10.0.1.0/24
           IpProtocol: -1
+        - CidrIpv6: !Select [1, !Cidr [!Select [0, !GetAtt Vpc.Ipv6CidrBlocks], 4, 64]]
+          IpProtocol: -1
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
           FromPort: 22
           ToPort: 22
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
+          IpProtocol: -1
+        - CidrIpv6: ::/0
           IpProtocol: -1
       VpcId: !Ref Vpc
 
@@ -228,6 +260,8 @@ Resources:
           User tinyproxy
           Group tinyproxy
           Port 8888
+          Listen 0.0.0.0
+          Listen ::
           Timeout 3600
           DefaultErrorFile "/usr/share/tinyproxy/default.html"
           LogFile "/var/log/tinyproxy/tinyproxy.log"
@@ -266,11 +300,14 @@ Resources:
           systemctl enable tinyproxy
           systemctl start tinyproxy
 
-          # iptables: redirect HTTP/HTTPS from private subnet through proxy
+          # Redirect HTTP/HTTPS through proxy for both IPv4 and IPv6
           iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
           iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8888
+          ip6tables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
+          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8888
 
           service iptables save
+          service ip6tables save
       Tags:
         - Key: Name
           Value: !Sub [ "BuildImageProxy-${StackIdSuffix}", {StackIdSuffix: !Select [1, !Split ['/', !Ref 'AWS::StackId']]}]
@@ -282,6 +319,7 @@ Resources:
         - !Ref ProxySecurityGroup
       SourceDestCheck: false
       SubnetId: !Ref PublicSubnet
+      Ipv6AddressCount: 1
 
 Outputs:
   VpcId:
