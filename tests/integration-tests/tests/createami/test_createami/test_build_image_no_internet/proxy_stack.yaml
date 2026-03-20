@@ -282,10 +282,8 @@ Resources:
           # Allowlist: OS package repos across all supported OSes
           cat << 'EOF' > /etc/tinyproxy/allowlist
           # Ubuntu
-          archive\.ubuntu\.com
-          security\.ubuntu\.com
+          .*\.ubuntu\.com
           ppa\.launchpadcontent\.net
-          keyserver\.ubuntu\.com
           # RHEL / Rocky / CentOS / EPEL
           .*\.fedoraproject\.org
           dl\.rockylinux\.org
