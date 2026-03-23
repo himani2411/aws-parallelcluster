@@ -241,7 +241,7 @@ Resources:
       - ProxyENI
     Properties:
       IamInstanceProfile: !Ref ProxyInstanceProfile
-      ImageId: resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+      ImageId: resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
       InstanceType: t3.medium
       KeyName: !Ref Keypair
       NetworkInterfaces:
@@ -255,109 +255,83 @@ Resources:
           #!/bin/bash -ex
           exec > >(tee /var/log/user-data.log) 2>&1
 
-          # Enable IP forwarding — required for routing packets from private subnet
+          # Enable IP forwarding so routed packets from private subnet are processed
           echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-forward.conf
+          echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.d/99-forward.conf
           sysctl --system
 
-          dnf install -y tinyproxy iptables-services
+          apt-get update -y
+          DEBIAN_FRONTEND=noninteractive apt-get install -y squid-openssl iptables-persistent
 
-          # Install redsocks (not in AL2023 repos, build from source)
-          dnf install -y git gcc libevent-devel make
-          git clone https://github.com/darkk/redsocks.git /tmp/redsocks
-          cd /tmp/redsocks && make
-          cp /tmp/redsocks/redsocks /usr/local/bin/redsocks
+          # Generate self-signed CA for SslBump peek/splice (no MITM decryption)
+          mkdir -p /etc/squid/ssl_cert
+          openssl req -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 \
+            -subj "/CN=Squid Transparent Proxy CA" \
+            -keyout /etc/squid/ssl_cert/squid-ca-key.pem \
+            -out  /etc/squid/ssl_cert/squid-ca-cert.pem
+          cat /etc/squid/ssl_cert/squid-ca-cert.pem \
+              /etc/squid/ssl_cert/squid-ca-key.pem \
+            > /etc/squid/ssl_cert/squid-ca-cert-key.pem
+          chown -R proxy:proxy /etc/squid/ssl_cert
 
-          # --- Tinyproxy config with domain allowlist ---
-          cat << 'EOF' > /etc/tinyproxy/tinyproxy.conf
-          User tinyproxy
-          Group tinyproxy
-          Port 8888
-          Listen 0.0.0.0
-          Timeout 3600
-          DefaultErrorFile "/usr/share/tinyproxy/default.html"
-          LogFile "/var/log/tinyproxy/tinyproxy.log"
-          LogLevel Info
-          MaxClients 500
-          MinSpareServers 20
-          MaxSpareServers 100
-          StartServers 20
-          MaxRequestsPerChild 0
-          ConnectPort 443
-          ConnectPort 80
-          Filter "/etc/tinyproxy/allowlist"
-          FilterDefaultDeny Yes
-          FilterURLs On
-          FilterExtended On
-          EOF
+          # Initialize Squid TLS session cache
+          /usr/lib/squid/security_file_certgen \
+            -c -s /var/spool/squid/ssl_db -M 20MB
+          chown -R proxy:proxy /var/spool/squid/ssl_db
 
-          # Allowlist: OS package repos across all supported OSes
-          cat << 'EOF' > /etc/tinyproxy/allowlist
-          # Ubuntu
-          .*\.ubuntu\.com
-          ppa\.launchpadcontent\.net
-          # RHEL / Rocky / CentOS / EPEL
-          .*\.fedoraproject\.org
-          dl\.rockylinux\.org
-          mirrors\.rockylinux\.org
-          download\.rockylinux\.org
-          mirror\.centos\.org
-          vault\.centos\.org
-          # Amazon Linux
-          cdn\.amazonlinux\.com
-          EOF
+          # Domain allowlist for OS package repos
+          cat << 'ALLOW' > /etc/squid/allowlist.txt
+          .ubuntu.com
+          .launchpadcontent.net
+          .fedoraproject.org
+          dl.rockylinux.org
+          mirrors.rockylinux.org
+          download.rockylinux.org
+          mirror.centos.org
+          vault.centos.org
+          cdn.amazonlinux.com
+          ALLOW
 
-          systemctl enable tinyproxy
-          systemctl start tinyproxy
+          # Squid config: transparent intercept + ssl-bump peek/splice for HTTPS
+          cat << 'SQUIDCFG' > /etc/squid/squid.conf
+          # Intercept ports (transparent proxy)
+          http_port 3129 intercept
+          https_port 3130 intercept ssl-bump \
+            cert=/etc/squid/ssl_cert/squid-ca-cert-key.pem \
+            generate-host-certificates=on \
+            dynamic_cert_mem_cache_size=20MB
 
-          # --- Redsocks config: bridges transparent HTTPS to tinyproxy via CONNECT ---
-          useradd -r -s /sbin/nologin redsocks || true
-          mkdir -p /var/log/redsocks
-          chown redsocks:redsocks /var/log/redsocks
+          sslcrtd_program /usr/lib/squid/security_file_certgen \
+            -s /var/spool/squid/ssl_db -M 20MB
 
-          cat << 'EOF' > /etc/redsocks.conf
-          base {
-            log_debug = off;
-            log_info = on;
-            log = "file:/var/log/redsocks/redsocks.log";
-            daemon = on;
-            user = redsocks;
-            group = redsocks;
-            redirector = iptables;
-          }
+          # Domain allowlist ACL
+          acl allowed_domains dstdomain "/etc/squid/allowlist.txt"
 
-          redsocks {
-            local_ip = 0.0.0.0;
-            local_port = 8889;
-            ip = 127.0.0.1;
-            port = 8888;
-            type = http-connect;
-          }
-          EOF
+          # Peek at TLS ClientHello SNI, then splice allowed / terminate denied
+          acl step1 at_step SslBump1
+          ssl_bump peek step1
+          ssl_bump splice allowed_domains
+          ssl_bump terminate all
 
-          /usr/local/bin/redsocks -c /etc/redsocks.conf
+          # HTTP access control
+          http_access allow allowed_domains
+          http_access deny all
 
-          # Create systemd unit so redsocks survives reboots
-          cat << 'UNIT' > /etc/systemd/system/redsocks.service
-          [Unit]
-          Description=Redsocks transparent redirector
-          After=network.target tinyproxy.service
-          [Service]
-          ExecStart=/usr/local/bin/redsocks -c /etc/redsocks.conf
-          Type=forking
-          User=root
-          [Install]
-          WantedBy=multi-user.target
-          UNIT
-          systemctl daemon-reload
-          systemctl enable redsocks
+          # Logging
+          access_log daemon:/var/log/squid/access.log squid
+          cache_log /var/log/squid/cache.log
+          SQUIDCFG
 
-          # --- iptables: redirect forwarded traffic from private subnet ---
-          # HTTP  -> tinyproxy directly (Host header available in HTTP/1.1)
-          # HTTPS -> redsocks -> tinyproxy via HTTP CONNECT (preserves SNI/TLS)
-          iptables -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 8888
-          iptables -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 8889
+          systemctl enable squid
+          systemctl restart squid
 
-          service iptables save
+          # iptables: redirect forwarded traffic from private subnet to Squid intercept ports
+          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 3129
+          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 3130
+          ip6tables -t nat -A PREROUTING -p tcp --dport 80  -j REDIRECT --to-port 3129
+          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
+
+          netfilter-persistent save
       Tags:
         - Key: Name
           Value: !Sub [ "BuildImageProxy-${StackIdSuffix}", {StackIdSuffix: !Select [1, !Split ['/', !Ref 'AWS::StackId']]}]
