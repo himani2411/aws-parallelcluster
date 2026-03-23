@@ -254,14 +254,21 @@ Resources:
         Fn::Base64: |
           #!/bin/bash -ex
           exec > >(tee /var/log/user-data.log) 2>&1
+
           dnf install -y tinyproxy iptables-services
 
+          # Install redsocks (not in AL2023 repos, build from source)
+          dnf install -y git gcc libevent-devel make
+          git clone https://github.com/darkk/redsocks.git /tmp/redsocks
+          cd /tmp/redsocks && make
+          cp /tmp/redsocks/redsocks /usr/local/bin/redsocks
+
+          # --- Tinyproxy config with domain allowlist ---
           cat << 'EOF' > /etc/tinyproxy/tinyproxy.conf
           User tinyproxy
           Group tinyproxy
           Port 8888
           Listen 0.0.0.0
-          Listen ::
           Timeout 3600
           DefaultErrorFile "/usr/share/tinyproxy/default.html"
           LogFile "/var/log/tinyproxy/tinyproxy.log"
@@ -298,14 +305,55 @@ Resources:
           systemctl enable tinyproxy
           systemctl start tinyproxy
 
-          # Redirect HTTP/HTTPS through proxy for both IPv4 and IPv6
-          iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
-          iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8888
-          ip6tables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
-          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8888
+          # --- Redsocks config: bridges transparent HTTPS to tinyproxy via CONNECT ---
+          useradd -r -s /sbin/nologin redsocks || true
+          mkdir -p /var/log/redsocks
+          chown redsocks:redsocks /var/log/redsocks
+
+          cat << 'EOF' > /etc/redsocks.conf
+          base {
+            log_debug = off;
+            log_info = on;
+            log = "file:/var/log/redsocks/redsocks.log";
+            daemon = on;
+            user = redsocks;
+            group = redsocks;
+            redirector = iptables;
+          }
+
+          redsocks {
+            local_ip = 0.0.0.0;
+            local_port = 8889;
+            ip = 127.0.0.1;
+            port = 8888;
+            type = http-connect;
+          }
+          EOF
+
+          /usr/local/bin/redsocks -c /etc/redsocks.conf
+
+          # Create systemd unit so redsocks survives reboots
+          cat << 'UNIT' > /etc/systemd/system/redsocks.service
+          [Unit]
+          Description=Redsocks transparent redirector
+          After=network.target tinyproxy.service
+          [Service]
+          ExecStart=/usr/local/bin/redsocks -c /etc/redsocks.conf
+          Type=forking
+          User=root
+          [Install]
+          WantedBy=multi-user.target
+          UNIT
+          systemctl daemon-reload
+          systemctl enable redsocks
+
+          # --- iptables: redirect forwarded traffic from private subnet ---
+          # HTTP  -> tinyproxy directly (Host header available in HTTP/1.1)
+          # HTTPS -> redsocks -> tinyproxy via HTTP CONNECT (preserves SNI/TLS)
+          iptables -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 8888
+          iptables -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 8889
 
           service iptables save
-          service ip6tables save
       Tags:
         - Key: Name
           Value: !Sub [ "BuildImageProxy-${StackIdSuffix}", {StackIdSuffix: !Select [1, !Split ['/', !Ref 'AWS::StackId']]}]
