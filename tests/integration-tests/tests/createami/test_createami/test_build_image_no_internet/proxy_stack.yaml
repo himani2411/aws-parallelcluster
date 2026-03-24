@@ -260,10 +260,10 @@ Resources:
           echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.d/99-forward.conf
           sysctl --system
 
-          apt-get update -y
+          DEBIAN_FRONTEND=noninteractive apt-get update -y
           DEBIAN_FRONTEND=noninteractive apt-get install -y squid-openssl iptables-persistent
 
-          # Generate self-signed CA for SslBump peek/splice (no MITM decryption)
+          # Generate self-signed CA for SslBump peek/splice
           mkdir -p /etc/squid/ssl_cert
           openssl req -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 \
             -subj "/CN=Squid Transparent Proxy CA" \
@@ -280,74 +280,63 @@ Resources:
           chown -R proxy:proxy /var/spool/squid/ssl_db
 
           # Domain allowlist for OS package repos
-          cat << 'ALLOW' > /etc/squid/allowlist.txt
-          .ubuntu.com
-          .launchpadcontent.net
-          .fedoraproject.org
-          dl.rockylinux.org
-          mirrors.rockylinux.org
-          download.rockylinux.org
-          mirror.centos.org
-          vault.centos.org
-          cdn.amazonlinux.com
-          ALLOW
+          cat > /etc/squid/allowlist.txt << 'ALLOW'
+.ubuntu.com
+.launchpadcontent.net
+.fedoraproject.org
+dl.rockylinux.org
+mirrors.rockylinux.org
+download.rockylinux.org
+mirror.centos.org
+vault.centos.org
+cdn.amazonlinux.com
+ALLOW
 
           # Squid config: transparent intercept + ssl-bump peek/splice for HTTPS
-          cat << 'SQUIDCFG' > /etc/squid/squid.conf
-          # Intercept ports (transparent proxy)
-          http_port 3129 intercept
-          https_port 3130 intercept ssl-bump \
-            cert=/etc/squid/ssl_cert/squid-ca-cert-key.pem \
-            generate-host-certificates=on \
-            dynamic_cert_mem_cache_size=20MB
+          cat > /etc/squid/squid.conf << 'SQUIDCFG'
+http_port 3129 intercept
+https_port 3130 intercept ssl-bump cert=/etc/squid/ssl_cert/squid-ca-cert-key.pem generate-host-certificates=on dynamic_cert_mem_cache_size=20MB
 
-          sslcrtd_program /usr/lib/squid/security_file_certgen \
-            -s /var/spool/squid/ssl_db -M 20MB
+sslcrtd_program /usr/lib/squid/security_file_certgen -s /var/spool/squid/ssl_db -M 20MB
 
-          # Domain allowlist ACL
-          acl allowed_domains dstdomain "/etc/squid/allowlist.txt"
+acl localnet src 10.0.0.0/16
+acl allowed_domains dstdomain "/etc/squid/allowlist.txt"
 
-          # Peek at TLS ClientHello SNI, then splice allowed / terminate denied
-          acl step1 at_step SslBump1
-          ssl_bump peek step1
-          ssl_bump splice allowed_domains
-          ssl_bump terminate all
+acl step1 at_step SslBump1
+ssl_bump peek step1
+ssl_bump splice allowed_domains
+ssl_bump terminate all
 
-          # HTTP access control
-          http_access allow allowed_domains
-          http_access deny all
-
-          # Logging
-          access_log daemon:/var/log/squid/access.log squid
-          cache_log /var/log/squid/cache.log
-          SQUIDCFG
+http_access allow localnet allowed_domains
+http_access deny all
+SQUIDCFG
 
           systemctl enable squid
           systemctl restart squid
 
-          # Wait for Squid to be ready
-          for i in $(seq 1 30); do
-            ss -tlnp | grep -q ':3129' && break
-            sleep 1
-          done
-
           # Get the outbound interface
           PRIMARY_IF=$(ip -4 route show default | awk '{print $5}' | head -1)
 
-          # iptables: divert forwarded HTTP/HTTPS from private subnet to Squid
-          # Use TPROXY-style with REDIRECT for intercepted traffic
-          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 3129
-          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 3130
-
-          # MASQUERADE Squid's outbound connections so responses come back to proxy
+          # NAT masquerade for ALL forwarded traffic first (so the network path works)
           iptables  -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
-
-          # IPv6: same rules
-          ip6tables -t nat -A PREROUTING -p tcp --dport 80  -j REDIRECT --to-port 3129
-          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
           ip6tables -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
 
+          # Divert HTTP/HTTPS from private subnet to Squid intercept ports
+          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 3129
+          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 3130
+          ip6tables -t nat -A PREROUTING -p tcp --dport 80  -j REDIRECT --to-port 3129
+          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
+
+          # Allow forwarding
+          iptables  -P FORWARD ACCEPT
+          ip6tables -P FORWARD ACCEPT
+
           netfilter-persistent save
+
+          # Signal CloudFormation that proxy setup is complete
+          apt-get install -y python3-pip
+          pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
+          /usr/local/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --region ${AWS::Region} ${ProxyReadyHandle}
       Tags:
         - Key: Name
           Value: !Sub [ "BuildImageProxy-${StackIdSuffix}", {StackIdSuffix: !Select [1, !Split ['/', !Ref 'AWS::StackId']]}]
@@ -360,6 +349,17 @@ Resources:
       SourceDestCheck: false
       SubnetId: !Ref PublicSubnet
       Ipv6AddressCount: 1
+
+  ProxyReadyHandle:
+    Type: AWS::CloudFormation::WaitConditionHandle
+
+  ProxyReady:
+    Type: AWS::CloudFormation::WaitCondition
+    DependsOn: Proxy
+    Properties:
+      Handle: !Ref ProxyReadyHandle
+      Timeout: 600
+      Count: 1
 
 Outputs:
   VpcId:
