@@ -12,3 +12,5 @@ Build:
 
 DevSettings:
     TerminateInstanceOnFailure: True
+    Cookbook:
+        ChefCookbook: {{ chef_cookbook }}

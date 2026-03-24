@@ -81,10 +81,26 @@ def test_build_image_no_internet(
     architecture,
     no_internet_proxy_stack,
     images_factory,
+    s3_bucket_factory,
     request,
 ):
     """Test build image in a private subnet with no internet access, only VPC endpoints and a proxy for OS repos."""
     base_ami = retrieve_latest_ami(region, os, architecture=architecture)
+
+    # Upload cookbook to S3 so the build instance can access it via the S3 VPC endpoint
+    # instead of GitHub (which is blocked in the no-internet environment)
+    chef_cookbook_url = request.config.getoption("createami_custom_chef_cookbook", default=None)
+    if chef_cookbook_url:
+        import urllib.request
+
+        bucket_name = s3_bucket_factory()
+        s3_key = "cookbooks/aws-parallelcluster-cookbook.tgz"
+        with tempfile.NamedTemporaryFile(suffix=".tgz") as tmp:
+            urllib.request.urlretrieve(chef_cookbook_url, tmp.name)
+            boto3.client("s3", region_name=region).upload_file(tmp.name, bucket_name, s3_key)
+        chef_cookbook_s3_url = f"s3://{bucket_name}/{s3_key}"
+    else:
+        chef_cookbook_s3_url = ""
 
     image_id = generate_stack_name("integ-tests-build-image-no-internet", request.config.getoption("stackname_suffix"))
     image_config = pcluster_config_reader(
@@ -92,6 +108,7 @@ def test_build_image_no_internet(
         parent_image=base_ami,
         subnet_id=no_internet_proxy_stack.cfn_outputs["PrivateSubnetId"],
         security_group_id=no_internet_proxy_stack.cfn_outputs["DefaultSecurityGroupId"],
+        chef_cookbook=chef_cookbook_s3_url,
     )
 
     image = images_factory(image_id, image_config, region)
