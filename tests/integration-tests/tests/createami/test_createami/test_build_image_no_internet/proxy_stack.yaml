@@ -255,7 +255,7 @@ Resources:
           #!/bin/bash -ex
           exec > >(tee /var/log/user-data.log) 2>&1
 
-          # Enable IP forwarding so routed packets from private subnet are processed
+          # Enable IP forwarding
           echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-forward.conf
           echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.d/99-forward.conf
           sysctl --system
@@ -325,11 +325,27 @@ Resources:
           systemctl enable squid
           systemctl restart squid
 
-          # iptables: redirect forwarded traffic from private subnet to Squid intercept ports
+          # Wait for Squid to be ready
+          for i in $(seq 1 30); do
+            ss -tlnp | grep -q ':3129' && break
+            sleep 1
+          done
+
+          # Get the outbound interface
+          PRIMARY_IF=$(ip -4 route show default | awk '{print $5}' | head -1)
+
+          # iptables: divert forwarded HTTP/HTTPS from private subnet to Squid
+          # Use TPROXY-style with REDIRECT for intercepted traffic
           iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 3129
           iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 3130
+
+          # MASQUERADE Squid's outbound connections so responses come back to proxy
+          iptables  -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
+
+          # IPv6: same rules
           ip6tables -t nat -A PREROUTING -p tcp --dport 80  -j REDIRECT --to-port 3129
           ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
+          ip6tables -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
 
           netfilter-persistent save
       Tags:
