@@ -241,7 +241,7 @@ Resources:
       - ProxyENI
     Properties:
       IamInstanceProfile: !Ref ProxyInstanceProfile
-      ImageId: resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+      ImageId: resolve:ssm:/aws/service/canonical/ubuntu/server/20.04/stable/current/amd64/hvm/ebs-gp2/ami-id
       InstanceType: t3.medium
       KeyName: !Ref Keypair
       NetworkInterfaces:
@@ -253,88 +253,83 @@ Resources:
       UserData:
         Fn::Base64: |
           #!/bin/bash -ex
-          exec > >(tee /var/log/user-data.log) 2>&1
+          set -o pipefail
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-          # Enable IP forwarding
-          echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-forward.conf
-          echo "net.ipv6.conf.all.forwarding = 1" >> /etc/sysctl.d/99-forward.conf
-          sysctl --system
+          # Enable IP forwarding for routed traffic from private subnet
+          sysctl -w net.ipv4.ip_forward=1
+          echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 
-          DEBIAN_FRONTEND=noninteractive apt-get update -y
-          DEBIAN_FRONTEND=noninteractive apt-get install -y squid-openssl iptables-persistent
+          apt-get update -y
+          apt-get install -y tinyproxy redsocks
 
-          # Generate self-signed CA for SslBump peek/splice
-          mkdir -p /etc/squid/ssl_cert
-          openssl req -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 \
-            -subj "/CN=Squid Transparent Proxy CA" \
-            -keyout /etc/squid/ssl_cert/squid-ca-key.pem \
-            -out  /etc/squid/ssl_cert/squid-ca-cert.pem
-          cat /etc/squid/ssl_cert/squid-ca-cert.pem \
-              /etc/squid/ssl_cert/squid-ca-key.pem \
-            > /etc/squid/ssl_cert/squid-ca-cert-key.pem
-          chown -R proxy:proxy /etc/squid/ssl_cert
+          cat << EOF > /etc/tinyproxy/tinyproxy.conf
+          User tinyproxy
+          Group tinyproxy
+          Port 8888
+          Timeout 3600
+          DefaultErrorFile "/usr/share/tinyproxy/default.html"
+          StatFile "/usr/share/tinyproxy/stats.html"
+          Logfile "/var/log/tinyproxy/tinyproxy.log"
+          LogLevel Info
+          PidFile "/run/tinyproxy/tinyproxy.pid"
+          MaxClients 500
+          MinSpareServers 20
+          MaxSpareServers 100
+          StartServers 20
+          MaxRequestsPerChild 0
+          ViaProxyName "tinyproxy"
+          ConnectPort 443
+          ConnectPort 80
+          Filter "/etc/tinyproxy/filter"
+          FilterDefaultDeny Yes
+          EOF
 
-          # Initialize Squid TLS session cache
-          /usr/lib/squid/security_file_certgen \
-            -c -s /var/spool/squid/ssl_db -M 20MB
-          chown -R proxy:proxy /var/spool/squid/ssl_db
+          cat << EOF > /etc/tinyproxy/filter
+          \.ubuntu\.com$
+          \.launchpadcontent\.net$
+          \.fedoraproject\.org$
+          ^dl\.rockylinux\.org$
+          ^mirrors\.rockylinux\.org$
+          ^download\.rockylinux\.org$
+          ^mirror\.centos\.org$
+          ^vault\.centos\.org$
+          ^cdn\.amazonlinux\.com$
+          EOF
 
-          # Domain allowlist for OS package repos
-          cat > /etc/squid/allowlist.txt << 'ALLOW'
-          .ubuntu.com
-          .launchpadcontent.net
-          .fedoraproject.org
-          dl.rockylinux.org
-          mirrors.rockylinux.org
-          download.rockylinux.org
-          mirror.centos.org
-          vault.centos.org
-          cdn.amazonlinux.com
-          ALLOW
-          sed -i 's/^          //' /etc/squid/allowlist.txt
+          /etc/init.d/tinyproxy restart
 
-          # Squid config: transparent intercept + ssl-bump peek/splice for HTTPS
-          cat > /etc/squid/squid.conf << 'SQUIDCFG'
-          http_port 3129 intercept
-          https_port 3130 intercept ssl-bump cert=/etc/squid/ssl_cert/squid-ca-cert-key.pem generate-host-certificates=on dynamic_cert_mem_cache_size=20MB
-          sslcrtd_program /usr/lib/squid/security_file_certgen -s /var/spool/squid/ssl_db -M 20MB
-          acl localnet src 10.0.0.0/16
-          acl allowed_domains dstdomain "/etc/squid/allowlist.txt"
-          acl step1 at_step SslBump1
-          ssl_bump peek step1
-          ssl_bump splice allowed_domains
-          ssl_bump terminate all
-          http_access allow localnet allowed_domains
-          http_access deny all
-          SQUIDCFG
-          sed -i 's/^          //' /etc/squid/squid.conf
+          cat << EOF > /etc/redsocks.conf
+          base {
+            log_debug = off;
+            log_info = on;
+            log = "file:/var/log/redsocks";
+            daemon = on;
+            user = redsocks;
+            group = redsocks;
+            redirector = iptables;
+          }
 
-          systemctl enable squid
-          systemctl restart squid
+          redsocks {
+            local_ip = 0.0.0.0;
+            local_port = 8889;
+            ip = localhost;
+            port = 8888;
+            type = http-connect;
+          }
+          EOF
 
-          # Get the outbound interface
-          PRIMARY_IF=$(ip -4 route show default | awk '{print $5}' | head -1)
+          /etc/init.d/redsocks restart
 
-          # NAT masquerade for ALL forwarded traffic first (so the network path works)
-          iptables  -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
-          ip6tables -t nat -A POSTROUTING -o $PRIMARY_IF -j MASQUERADE
+          iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
+          iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8889
 
-          # Divert HTTP/HTTPS from private subnet to Squid intercept ports
-          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 80  -j REDIRECT --to-port 3129
-          iptables  -t nat -A PREROUTING -s 10.0.1.0/24 -p tcp --dport 443 -j REDIRECT --to-port 3130
-          ip6tables -t nat -A PREROUTING -p tcp --dport 80  -j REDIRECT --to-port 3129
-          ip6tables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 3130
+          mkdir -p /etc/iptables/
+          iptables-save > /etc/iptables/rules.v4
 
-          # Allow forwarding
-          iptables  -P FORWARD ACCEPT
-          ip6tables -P FORWARD ACCEPT
-
-          netfilter-persistent save
-
-          # Signal CloudFormation that proxy setup is complete
-          apt-get install -y python3-pip
-          pip3 install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz
-          /usr/local/bin/cfn-signal --exit-code $? --stack ${AWS::StackName} --region ${AWS::Region} ${ProxyReadyHandle}
+          echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+          echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+          apt-get install -y iptables-persistent
       Tags:
         - Key: Name
           Value: !Sub [ "BuildImageProxy-${StackIdSuffix}", {StackIdSuffix: !Select [1, !Split ['/', !Ref 'AWS::StackId']]}]
@@ -347,17 +342,6 @@ Resources:
       SourceDestCheck: false
       SubnetId: !Ref PublicSubnet
       Ipv6AddressCount: 1
-
-  ProxyReadyHandle:
-    Type: AWS::CloudFormation::WaitConditionHandle
-
-  ProxyReady:
-    Type: AWS::CloudFormation::WaitCondition
-    DependsOn: Proxy
-    Properties:
-      Handle: !Ref ProxyReadyHandle
-      Timeout: 600
-      Count: 1
 
 Outputs:
   VpcId:
