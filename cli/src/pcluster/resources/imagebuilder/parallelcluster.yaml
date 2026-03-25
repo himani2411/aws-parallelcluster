@@ -98,32 +98,6 @@ phases:
               set -x
               . /opt/parallelcluster/system_info
 
-              # Auto-detect proxy: if default route points to an instance (not a gateway),
-              # assume it is a proxy and configure explicit proxy env vars.
-              # The proxy instance IP is the next-hop of the default route.
-              PROXY_IP=$(ip -4 route show default | awk '{print $3}')
-              if [ -n "$PROXY_IP" ]; then
-                # Test if proxy is listening on port 8888
-                if timeout 3 bash -c "echo > /dev/tcp/${!PROXY_IP}/8888" 2>/dev/null; then
-                  PROXY_URL="http://${!PROXY_IP}:8888"
-                  NO_PROXY="localhost,127.0.0.1,169.254.169.254,169.254.170.2,10.0.0.0/8,.s3.${AWS::Region}.${AWS::URLSuffix},s3.${AWS::Region}.${AWS::URLSuffix}"
-                  export http_proxy="${!PROXY_URL}"
-                  export https_proxy="${!PROXY_URL}"
-                  export no_proxy="${!NO_PROXY}"
-                  export HTTP_PROXY="${!PROXY_URL}"
-                  export HTTPS_PROXY="${!PROXY_URL}"
-                  export NO_PROXY="${!NO_PROXY}"
-                  # Persist for subsequent steps
-                  echo "export http_proxy='${!PROXY_URL}'" >> /opt/parallelcluster/system_info
-                  echo "export https_proxy='${!PROXY_URL}'" >> /opt/parallelcluster/system_info
-                  echo "export no_proxy='${!NO_PROXY}'" >> /opt/parallelcluster/system_info
-                  echo "export HTTP_PROXY='${!PROXY_URL}'" >> /opt/parallelcluster/system_info
-                  echo "export HTTPS_PROXY='${!PROXY_URL}'" >> /opt/parallelcluster/system_info
-                  echo "export NO_PROXY='${!NO_PROXY}'" >> /opt/parallelcluster/system_info
-                  echo "Proxy detected and configured: ${!PROXY_URL}"
-                fi
-              fi
-
               # Pin kernel versions and install packages
               if [[ $PLATFORM == RHEL ]]; then
                 [[ $OS =~ (rhel9|rocky9) && ! -f /etc/yum/vars/releasever ]] && {
