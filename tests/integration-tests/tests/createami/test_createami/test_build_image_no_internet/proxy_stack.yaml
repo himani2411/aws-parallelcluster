@@ -296,10 +296,9 @@ Resources:
           ^vault\.centos\.org$
           ^cdn\.amazonlinux\.com$
           ^awscli\.amazonaws\.com
+          \.s3\.amazonaws\.com
           ^s3\.amazonaws\.com
           ^efa-installer\.amazonaws\.com
-          ^fsx-lustre-client-repo-public-keys\.s3\.amazonaws\.com
-          ^fsx-lustre-client-repo\.s3\.amazonaws\.com
           ^index\.crates\.io
           ^static\.crates\.io
           EOF
