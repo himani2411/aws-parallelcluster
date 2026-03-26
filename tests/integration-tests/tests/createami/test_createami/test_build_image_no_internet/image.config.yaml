@@ -14,3 +14,5 @@ DevSettings:
     TerminateInstanceOnFailure: True
     Cookbook:
         ChefCookbook: {{ chef_cookbook }}
+    NodePackage: {{ node_package }}
+    AwsBatchCliPackage: {{ awsbatch_cli_package }}

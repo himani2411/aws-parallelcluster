@@ -85,22 +85,34 @@ def test_build_image_no_internet(
     request,
 ):
     """Test build image in a private subnet with no internet access, only VPC endpoints and a proxy for OS repos."""
+    import urllib.request
+
     base_ami = retrieve_latest_ami(region, os, architecture=architecture)
 
-    # Upload cookbook to S3 so the build instance can access it via the S3 VPC endpoint
-    # instead of GitHub (which is blocked in the no-internet environment)
-    chef_cookbook_url = request.config.getoption("createami_custom_chef_cookbook", default=None)
-    if chef_cookbook_url:
-        import urllib.request
+    # Upload dev packages to S3 so the build instance can access them via the S3 VPC endpoint
+    # instead of GitHub (which is blocked in the no-internet environment).
+    # The test runner (which has internet) downloads from GitHub and re-uploads to S3.
+    bucket_name = s3_bucket_factory()
+    s3_client = boto3.client("s3", region_name=region)
 
-        bucket_name = s3_bucket_factory()
-        s3_key = "cookbooks/aws-parallelcluster-cookbook.tgz"
-        with tempfile.NamedTemporaryFile(suffix=".tgz") as tmp:
-            urllib.request.urlretrieve(chef_cookbook_url, tmp.name)
-            boto3.client("s3", region_name=region).upload_file(tmp.name, bucket_name, s3_key)
-        chef_cookbook_s3_url = f"s3://{bucket_name}/{s3_key}"
-    else:
-        chef_cookbook_s3_url = ""
+    def _upload_github_package_to_s3(option_name, s3_key):
+        url = request.config.getoption(option_name, default=None)
+        if url:
+            with tempfile.NamedTemporaryFile(suffix=".tgz") as tmp:
+                urllib.request.urlretrieve(url, tmp.name)
+                s3_client.upload_file(tmp.name, bucket_name, s3_key)
+            return f"s3://{bucket_name}/{s3_key}"
+        return ""
+
+    chef_cookbook_s3_url = _upload_github_package_to_s3(
+        "createami_custom_chef_cookbook", "packages/aws-parallelcluster-cookbook.tgz"
+    )
+    node_package_s3_url = _upload_github_package_to_s3(
+        "createami_custom_node_package", "packages/aws-parallelcluster-node.tgz"
+    )
+    awsbatch_cli_s3_url = _upload_github_package_to_s3(
+        "custom_awsbatchcli_package", "packages/aws-parallelcluster-batch-cli.tgz"
+    )
 
     image_id = generate_stack_name("integ-tests-build-image-no-internet", request.config.getoption("stackname_suffix"))
     image_config = pcluster_config_reader(
@@ -109,6 +121,8 @@ def test_build_image_no_internet(
         subnet_id=no_internet_proxy_stack.cfn_outputs["PrivateSubnetId"],
         security_group_id=no_internet_proxy_stack.cfn_outputs["DefaultSecurityGroupId"],
         chef_cookbook=chef_cookbook_s3_url,
+        node_package=node_package_s3_url,
+        awsbatch_cli_package=awsbatch_cli_s3_url,
     )
 
     image = images_factory(image_id, image_config, region)
