@@ -300,6 +300,8 @@ Resources:
           ^efa-installer\.amazonaws\.com
           ^fsx-lustre-client-repo-public-keys\.s3\.amazonaws\.com
           ^fsx-lustre-client-repo\.s3\.amazonaws\.com
+          ^index\.crates\.io
+          ^static\.crates\.io
           EOF
 
           /etc/init.d/tinyproxy restart
