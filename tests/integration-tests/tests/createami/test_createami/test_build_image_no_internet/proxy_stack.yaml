@@ -297,6 +297,7 @@ Resources:
           ^cdn\.amazonlinux\.com$
           ^awscli\.amazonaws\.com
           ^s3\.amazonaws\.com
+          ^efa-installer\.amazonaws\.com
           EOF
 
           /etc/init.d/tinyproxy restart
