@@ -298,6 +298,8 @@ Resources:
           ^awscli\.amazonaws\.com
           ^s3\.amazonaws\.com
           ^efa-installer\.amazonaws\.com
+          ^fsx-lustre-client-repo-public-keys\.s3\.amazonaws\.com
+          ^fsx-lustre-client-repo\.s3\.amazonaws\.com
           EOF
 
           /etc/init.d/tinyproxy restart
