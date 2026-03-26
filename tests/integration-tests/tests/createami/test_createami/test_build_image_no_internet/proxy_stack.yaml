@@ -296,6 +296,7 @@ Resources:
           ^vault\.centos\.org$
           ^cdn\.amazonlinux\.com$
           ^awscli\.amazonaws\.com
+          ^s3\.amazonaws\.com
           EOF
 
           /etc/init.d/tinyproxy restart
