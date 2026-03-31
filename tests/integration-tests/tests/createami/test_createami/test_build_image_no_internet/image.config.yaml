@@ -9,6 +9,9 @@ Build:
     SecurityGroupIds:
         - {{ security_group_id }}
     SubnetId: {{ subnet_id }}
+    Iam:
+        AdditionalIamPolicies:
+            - Policy: arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
 
 DevSettings:
     TerminateInstanceOnFailure: True
