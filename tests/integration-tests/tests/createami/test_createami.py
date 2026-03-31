@@ -101,7 +101,13 @@ def test_build_image_no_internet(
             with tempfile.NamedTemporaryFile(suffix=".tgz") as tmp:
                 urllib.request.urlretrieve(url, tmp.name)
                 s3_client.upload_file(tmp.name, bucket_name, s3_key)
-            return f"s3://{bucket_name}/{s3_key}"
+            # Return presigned HTTPS URL with regional endpoint so it bypasses the proxy
+            # via no_proxy and goes through the S3 VPC endpoint directly.
+            return s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": bucket_name, "Key": s3_key},
+                ExpiresIn=7200,
+            )
         return ""
 
     chef_cookbook_s3_url = _upload_github_package_to_s3(
@@ -109,9 +115,6 @@ def test_build_image_no_internet(
     )
     node_package_s3_url = _upload_github_package_to_s3(
         "createami_custom_node_package", "packages/aws-parallelcluster-node.tgz"
-    )
-    awsbatch_cli_s3_url = _upload_github_package_to_s3(
-        "custom_awsbatchcli_package", "packages/aws-parallelcluster-batch-cli.tgz"
     )
 
     image_id = generate_stack_name("integ-tests-build-image-no-internet", request.config.getoption("stackname_suffix"))
@@ -122,7 +125,6 @@ def test_build_image_no_internet(
         security_group_id=no_internet_proxy_stack.cfn_outputs["DefaultSecurityGroupId"],
         chef_cookbook=chef_cookbook_s3_url,
         node_package=node_package_s3_url,
-        awsbatch_cli_package=awsbatch_cli_s3_url,
     )
 
     image = images_factory(image_id, image_config, region)

@@ -14,5 +14,5 @@ DevSettings:
     TerminateInstanceOnFailure: True
     Cookbook:
         ChefCookbook: {{ chef_cookbook }}
+        ExtraChefAttributes: '{"cluster": {"skip_awsbatch_cli_install": "true"}}'
     NodePackage: {{ node_package }}
-    AwsBatchCliPackage: {{ awsbatch_cli_package }}
