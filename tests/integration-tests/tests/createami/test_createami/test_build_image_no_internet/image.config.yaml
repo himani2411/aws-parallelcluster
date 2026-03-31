@@ -11,7 +11,7 @@ Build:
     SubnetId: {{ subnet_id }}
     Iam:
         AdditionalIamPolicies:
-            - Policy: arn:aws:iam::aws:policy/AmazonS3FullAccess
+            - Policy: arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
 
 DevSettings:
     TerminateInstanceOnFailure: True
