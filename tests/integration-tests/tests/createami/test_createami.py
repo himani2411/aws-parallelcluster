@@ -101,13 +101,7 @@ def test_build_image_no_internet(
             with tempfile.NamedTemporaryFile(suffix=".tgz") as tmp:
                 urllib.request.urlretrieve(url, tmp.name)
                 s3_client.upload_file(tmp.name, bucket_name, s3_key)
-            # Return presigned HTTPS URL with regional endpoint so it bypasses the proxy
-            # via no_proxy and goes through the S3 VPC endpoint directly.
-            return s3_client.generate_presigned_url(
-                "get_object",
-                Params={"Bucket": bucket_name, "Key": s3_key},
-                ExpiresIn=7200,
-            )
+            return f"s3://{bucket_name}/{s3_key}"
         return ""
 
     chef_cookbook_s3_url = _upload_github_package_to_s3(
