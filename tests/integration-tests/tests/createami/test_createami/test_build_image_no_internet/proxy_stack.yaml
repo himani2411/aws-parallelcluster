@@ -60,7 +60,7 @@ Resources:
   PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: !Sub ${AWS::Region}a
+      AvailabilityZone: !Sub ${AWS::Region}b
       CidrBlock: 10.0.1.0/24
       MapPublicIpOnLaunch: false
       VpcId: !Ref Vpc
