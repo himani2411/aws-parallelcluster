@@ -256,7 +256,8 @@ Resources:
           set -o pipefail
           exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
-          # Enable IP forwarding for routed traffic from private subnet
+          # Enable IP forwarding — without this, the kernel drops packets routed from
+          # the private subnet, causing "connection timed out" in the ConfigureSystem step.
           sysctl -w net.ipv4.ip_forward=1
           echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 
@@ -305,6 +306,12 @@ Resources:
 
           /etc/init.d/tinyproxy restart
 
+          # Redsocks bridges transparent HTTPS to tinyproxy via HTTP CONNECT.
+          # Tinyproxy can't handle raw TLS — redsocks wraps port 443 traffic in CONNECT
+          # so tinyproxy can read the hostname and apply its domain allowlist.
+          # Needed for pre-Chef HTTPS calls in parallelcluster.yaml (e.g., apt-get upgrade
+          # ca-certificates in the InstallCincAndCookbooks step). Once Chef runs,
+          # detect_proxy.rb sets explicit proxy env vars and bypasses redsocks.
           cat << EOF > /etc/redsocks.conf
           base {
             log_debug = off;
@@ -327,7 +334,10 @@ Resources:
 
           /etc/init.d/redsocks restart
 
+          # HTTP → tinyproxy (reads Host header for filtering)
           iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8888
+
+          # HTTPS → redsocks → tinyproxy CONNECT (wraps TLS in CONNECT for filtering)
           iptables -t nat -A PREROUTING -p tcp --dport 443 -j REDIRECT --to-port 8889
 
           mkdir -p /etc/iptables/
