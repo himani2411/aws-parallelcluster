@@ -379,6 +379,7 @@ Resources:
             ^efa-installer\.amazonaws\.com
             ^index\.crates\.io
             ^static\.crates\.io
+            ^api\.snapcraft\.io
             FILTER
             fi
 
