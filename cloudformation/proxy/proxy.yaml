@@ -507,7 +507,6 @@ Outputs:
   PrivateSubnet:
     Value: !Ref PrivateSubnet
   ProxyAddress:
-    Condition: IsClusterProxy
     Value: !Sub [ "http://${ProxyPrivateIp}:8888", { ProxyPrivateIp: !GetAtt Proxy.PrivateIp } ]
   ProxyClientSecurityGroup:
     Condition: IsClusterProxy

@@ -97,6 +97,9 @@ def test_build_image_no_internet(
         "createami_custom_node_package", "packages/aws-parallelcluster-node.tgz"
     )
 
+    # Get the proxy URL from the stack output
+    install_proxy_url = no_internet_proxy_stack.cfn_outputs["ProxyAddress"]
+
     image_id = generate_stack_name("integ-tests-build-image-no-internet", request.config.getoption("stackname_suffix"))
     image_config = pcluster_config_reader(
         config_file="image.config.yaml",
@@ -105,6 +108,7 @@ def test_build_image_no_internet(
         security_group_id=no_internet_proxy_stack.cfn_outputs["DefaultSecurityGroupId"],
         chef_cookbook=chef_cookbook_s3_url,
         node_package=node_package_s3_url,
+        install_proxy_url=install_proxy_url,
     )
 
     image = images_factory(image_id, image_config, region)
