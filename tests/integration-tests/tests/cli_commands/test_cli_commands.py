@@ -22,6 +22,7 @@ import botocore
 import pytest
 from assertpy import assert_that
 from dateutil.parser import parse as date_parse
+from filelock import FileLock
 from framework.credential_providers import run_pcluster_command
 from remote_command_executor import RemoteCommandExecutor
 from retrying import retry
@@ -92,8 +93,20 @@ def test_slurm_cli_commands(
     filters = [{}, {"node_type": "HeadNode"}, {"node_type": "Compute"}, {"queue_name": "ondemand1"}]
     for filter_ in filters:
         _test_describe_instances(cluster, **filter_)
-    _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster)
-    _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster, True)
+
+    # Serialize export-cluster-logs calls across xdist workers using a file lock.
+    # CloudWatch Logs only allows one active export task per account per region at a time,
+    # so concurrent workers hitting this will get "Resource limit exceeded" errors.
+    outdir = request.config.getoption("output_dir")
+    export_lock_file = os_lib.path.join(outdir, f"export_cluster_logs_{region}.lock")
+    export_lock = FileLock(lock_file=export_lock_file)
+    logging.info("Acquiring export-cluster-logs lock: %s", export_lock.lock_file)
+    with export_lock.acquire(poll_interval=30, timeout=900):
+        logging.info("Export-cluster-logs lock acquired, proceeding with export tests")
+        _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster)
+        _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster, True)
+    logging.info("Released export-cluster-logs lock: %s", export_lock.lock_file)
+
     check_pcluster_list_cluster_log_streams(cluster, os)
     _test_pcluster_get_cluster_log_events(cluster)
     _test_pcluster_get_cluster_stack_events(cluster)
