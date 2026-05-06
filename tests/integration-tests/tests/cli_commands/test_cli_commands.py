@@ -22,7 +22,6 @@ import botocore
 import pytest
 from assertpy import assert_that
 from dateutil.parser import parse as date_parse
-from filelock import FileLock
 from framework.credential_providers import run_pcluster_command
 from remote_command_executor import RemoteCommandExecutor
 from retrying import retry
@@ -39,7 +38,7 @@ from tests.common.assertions import assert_no_errors_in_logs, wait_for_num_insta
 from tests.common.utils import (
     get_installed_parallelcluster_version,
     retrieve_latest_ami,
-    wait_for_no_active_export_tasks,
+    serialize_export_logs,
 )
 
 
@@ -380,20 +379,20 @@ def _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster, use_pcluster_
 
     # test with a prefix and an output file
     bucket_prefix = "test_prefix"
-    wait_for_no_active_export_tasks(cluster.region)
-    retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(_test_export_log_files_are_expected)(
-        cluster, bucket_name if not use_pcluster_bucket else None, instance_ids, bucket_prefix
-    )
+    with serialize_export_logs(cluster.region):
+        retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(_test_export_log_files_are_expected)(
+            cluster, bucket_name if not use_pcluster_bucket else None, instance_ids, bucket_prefix
+        )
 
     # test export-cluster-logs with filter option
-    wait_for_no_active_export_tasks(cluster.region)
-    retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(_test_export_log_files_are_expected)(
-        cluster,
-        bucket_name if not use_pcluster_bucket else None,
-        headnode_instance_id,
-        bucket_prefix,
-        filters="Name=node-type,Values=HeadNode",
-    )
+    with serialize_export_logs(cluster.region):
+        retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(_test_export_log_files_are_expected)(
+            cluster,
+            bucket_name if not use_pcluster_bucket else None,
+            headnode_instance_id,
+            bucket_prefix,
+            filters="Name=node-type,Values=HeadNode",
+        )
 
     # check bucket_prefix folder has been removed from S3
     bucket_cleaned_up = False
@@ -405,10 +404,10 @@ def _test_pcluster_export_cluster_logs(s3_bucket_factory, cluster, use_pcluster_
     assert_that(bucket_cleaned_up).is_true()
 
     # test without a prefix or output file
-    wait_for_no_active_export_tasks(cluster.region)
-    ret = retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(cluster.export_logs)(
-        bucket=bucket_name if not use_pcluster_bucket else None
-    )
+    with serialize_export_logs(cluster.region):
+        ret = retry(wait_fixed=seconds(20), stop_max_delay=minutes(3))(cluster.export_logs)(
+            bucket=bucket_name if not use_pcluster_bucket else None
+        )
     assert_that(ret).contains_key("url")
     filename = ret["url"].split(".tar.gz")[0].split("/")[-1] + ".tar.gz"
     archive_found = True

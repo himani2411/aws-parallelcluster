@@ -15,6 +15,7 @@ import pathlib
 import random
 import string
 import time
+from contextlib import contextmanager
 from importlib.metadata import version as get_package_version
 
 import boto3
@@ -701,15 +702,49 @@ def upload_github_artifacts_to_s3(bucket_name, region, request):
     return result
 
 
+@contextmanager
+def serialize_export_logs(region):
+    """Context manager to serialize CloudWatch Logs export operations across xdist workers.
+
+    Each account can only have one active (RUNNING or PENDING) export task per region at a time.
+    This context manager acquires a file lock and waits for any active export tasks to complete
+    before yielding, preventing "Resource limit exceeded" errors when multiple workers attempt
+    to export concurrently in the same region/account.
+
+    Usage:
+        with serialize_export_logs(region):
+            cluster.export_logs(...)
+
+    See: https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateExportTask.html
+    """
+    import tempfile
+
+    from filelock import FileLock
+
+    lock_file = os.path.join(tempfile.gettempdir(), f"pcluster_export_logs_{region}.lock")
+    lock = FileLock(lock_file=lock_file)
+    logging.info("Acquiring export-cluster-logs lock for region %s: %s", region, lock.lock_file)
+    with lock.acquire(poll_interval=30, timeout=900):
+        logging.info("Export-cluster-logs lock acquired for region %s", region)
+        _wait_for_active_export_tasks_to_complete(region)
+        yield
+    logging.info("Released export-cluster-logs lock for region %s: %s", region, lock.lock_file)
+
+
 def wait_for_no_active_export_tasks(region):
     """Wait until there are no active CloudWatch Logs export tasks in the region.
 
-    Each account can only have one active (RUNNING or PENDING) export task per region at a time.
-    This function uses the statusCode filter to query only active tasks server-side,
-    preventing conflicts with subsequent export calls and avoiding pagination through
-    years of completed historical tasks.
-    See: https://docs.aws.amazon.com/AmazonCloudWatchLogs/latest/APIReference/API_CreateExportTask.html
+    DEPRECATED: Prefer using serialize_export_logs(region) context manager instead,
+    which combines the wait with a file lock to prevent race conditions across xdist workers.
+
+    This function only polls for active tasks but does NOT prevent concurrent workers from
+    racing past the check simultaneously.
     """
+    _wait_for_active_export_tasks_to_complete(region)
+
+
+def _wait_for_active_export_tasks_to_complete(region):
+    """Internal helper: poll until no active export tasks exist in the region."""
     logging.info("Starting the check for active export tasks in region %s", region)
     active_statuses = ("RUNNING", "PENDING")
     logs_client = boto3.client("logs", region_name=region)
