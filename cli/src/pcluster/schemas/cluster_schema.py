@@ -1145,6 +1145,7 @@ class ClusterDevSettingsSchema(BaseDevSettingsSchema):
     timeouts = fields.Nested(TimeoutsSchema, metadata={"update_policy": UpdatePolicy.SUPPORTED})
     compute_startup_time_metric_enabled = fields.Bool(metadata={"update_policy": UpdatePolicy.SUPPORTED})
     efa_interface_type = fields.Str(metadata={"update_policy": UpdatePolicy.QUEUE_UPDATE_STRATEGY})
+    slurm_patches_s3_archive = fields.Str(metadata={"update_policy": UpdatePolicy.COMPUTE_FLEET_STOP})
 
     @post_load
     def make_resource(self, data, **kwargs):

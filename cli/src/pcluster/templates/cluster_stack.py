@@ -1392,6 +1392,7 @@ class ClusterCdkStack:
                     "instance_types_data_s3_key": f"{self.bucket.artifact_directory}/configs/"
                     f"{PCLUSTER_S3_ARTIFACTS_DICT.get('instance_types_data_name')}",
                     "custom_node_package": self.config.custom_node_package or "",
+                    "slurm_patches_s3_archive": self.config.slurm_patches_s3_archive or "",
                     "head_node_imds_secured": str(self.config.head_node.imds.secured).lower(),
                     "compute_node_bootstrap_timeout": get_attr(
                         self.config, "dev_settings.timeouts.compute_node_bootstrap_timeout", NODE_BOOTSTRAP_TIMEOUT

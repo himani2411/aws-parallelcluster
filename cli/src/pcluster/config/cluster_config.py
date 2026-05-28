@@ -1219,6 +1219,7 @@ class ClusterDevSettings(BaseDevSettings):
         timeouts: Timeouts = None,
         compute_startup_time_metric_enabled: bool = None,
         efa_interface_type: str = None,
+        slurm_patches_s3_archive: str = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -1226,6 +1227,7 @@ class ClusterDevSettings(BaseDevSettings):
         self.ami_search_filters = Resource.init_param(ami_search_filters)
         self.instance_types_data = Resource.init_param(instance_types_data)
         self.timeouts = Resource.init_param(timeouts)
+        self.slurm_patches_s3_archive = Resource.init_param(slurm_patches_s3_archive, default="")
         self.compute_startup_time_metric_enabled = Resource.init_param(
             compute_startup_time_metric_enabled, default=False
         )
@@ -2057,6 +2059,11 @@ class BaseClusterConfig(Resource):
     def custom_node_package(self):
         """Return custom node package value or None."""
         return self.dev_settings.node_package if self.dev_settings else None
+
+    @property
+    def slurm_patches_s3_archive(self):
+        """Return URL of an archive containing custom Slurm patches, or empty string."""
+        return self.dev_settings.slurm_patches_s3_archive if self.dev_settings else ""
 
     @property
     def official_ami(self):

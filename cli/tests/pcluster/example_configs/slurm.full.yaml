@@ -318,6 +318,7 @@ DevSettings:
     ExtraChefAttributes: |
       {"cluster": {"scheduler_slots": "cores", "slurm_node_reg_mem_percent": 75, "realmemory_to_ec2memory_ratio": 0.95}}
   NodePackage: s3://test/aws-parallelcluster-node-3.0.tgz
+  SlurmPatchesS3Archive: s3://test/slurm-patches.tar.gz
   AmiSearchFilters:
     Tags:
     - Key: tag1

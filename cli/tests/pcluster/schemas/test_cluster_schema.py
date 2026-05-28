@@ -1131,3 +1131,36 @@ def test_cluster_deployment_settings_schema(mocker, config_dict, failure_message
     else:
         conf = ClusterDeploymentSettingsSchema().load(config_dict)
         ClusterDeploymentSettingsSchema().dump(conf)
+
+
+def test_cluster_dev_settings_slurm_patches_s3_archive_field():
+    """Verify SlurmPatchesS3Archive field on ClusterDevSettings.
+
+    Loading the field should produce a ClusterDevSettings whose
+    slurm_patches_s3_archive attribute carries the configured URL, and
+    dumping should round-trip the same value back into YAML.
+    """
+    from pcluster.config.cluster_config import ClusterDevSettings
+    from pcluster.config.update_policy import UpdatePolicy
+    from pcluster.schemas.cluster_schema import ClusterDevSettingsSchema
+
+    archive_url = "s3://example-bucket/slurm-patches.tar.gz"
+
+    schema = ClusterDevSettingsSchema()
+    loaded = schema.load({"SlurmPatchesS3Archive": archive_url})
+    assert_that(loaded).is_instance_of(ClusterDevSettings)
+    assert_that(loaded.slurm_patches_s3_archive).is_equal_to(archive_url)
+
+    dumped = schema.dump(loaded)
+    assert_that(dumped).contains_entry({"SlurmPatchesS3Archive": archive_url})
+
+    # Default should be empty string when the field is absent. Schema's
+    # post_load resolves through Resource.init_param's default in the
+    # constructor, not through a field-level default.
+    loaded_empty = schema.load({})
+    assert_that(loaded_empty.slurm_patches_s3_archive).is_equal_to("")
+
+    # Update policy must be COMPUTE_FLEET_STOP so pcluster update-cluster
+    # only allows the field to change when the compute fleet is stopped.
+    field = schema.fields["slurm_patches_s3_archive"]
+    assert_that(field.metadata.get("update_policy")).is_equal_to(UpdatePolicy.COMPUTE_FLEET_STOP)
