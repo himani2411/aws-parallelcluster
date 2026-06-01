@@ -2,6 +2,7 @@ Image:
   Os: {{ os }}
 HeadNode:
   InstanceType: {{ instance }}
+  SharedStorageType: Efs
   Networking:
     SubnetId: {{ public_subnet_id }}
     AdditionalSecurityGroups:
