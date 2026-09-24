@@ -1349,11 +1349,18 @@ class ComputeResourceLaunchTemplateValidator(_LaunchTemplateValidator):
                 (compute_res for compute_res in queue.compute_resources if compute_res.max_network_cards > 1),
                 queue.compute_resources[0],
             )
-            compute_resource_placement_group = (
-                dry_run_compute_resource.networking.placement_group or queue.networking.placement_group
+            compute_resource_placement_group = queue.get_chosen_placement_group_setting_for_compute_resource(
+                dry_run_compute_resource
             )
+            placement_group_assignment = compute_resource_placement_group.assignment
+            if not placement_group_assignment:
+                placement_group = {}
+            elif compute_resource_placement_group.assignment_is_id:
+                # An id has to be passed as an id: EC2 resolves GroupName as a name only.
+                placement_group = {"GroupId": placement_group_assignment}
+            else:
+                placement_group = {"GroupName": placement_group_assignment}
 
-            placement_group_name = compute_resource_placement_group.assignment
             # For SlurmFlexibleComputeResource test only the first InstanceType through a RunInstances
             self._test_compute_resource(
                 queue=queue,
@@ -1363,7 +1370,7 @@ class ComputeResourceLaunchTemplateValidator(_LaunchTemplateValidator):
                 ami_id=ami_id,
                 subnet_id=queue_subnet_id,
                 security_groups_ids=queue_security_groups,
-                placement_group={"GroupName": placement_group_name} if placement_group_name else {},
+                placement_group=placement_group,
                 tags=tags,
                 imds_support=imds_support,
             )

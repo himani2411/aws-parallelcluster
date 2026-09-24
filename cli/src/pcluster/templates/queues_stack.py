@@ -98,11 +98,18 @@ class QueuesStack(NestedStack):
         self._add_resources()
 
     @staticmethod
-    def _get_placement_group_for_compute_resource(queue, managed_placement_groups, compute_resource) -> str:
+    def _get_placement_for_compute_resource(
+        queue, managed_placement_groups, compute_resource
+    ) -> ec2.CfnLaunchTemplate.PlacementProperty:
         placement_group_settings = queue.get_placement_group_settings_for_compute_resource(compute_resource)
         placement_group_key = placement_group_settings.get("key")
         managed = placement_group_settings.get("is_managed")
-        return managed_placement_groups[placement_group_key].ref if managed else placement_group_key
+        if managed:
+            return ec2.CfnLaunchTemplate.PlacementProperty(group_name=managed_placement_groups[placement_group_key].ref)
+        if placement_group_settings.get("is_id"):
+            # An id has to be passed as an id: EC2 resolves GroupName as a name only.
+            return ec2.CfnLaunchTemplate.PlacementProperty(group_id=placement_group_key)
+        return ec2.CfnLaunchTemplate.PlacementProperty(group_name=placement_group_key)
 
     @property
     def stack_name(self):
@@ -153,7 +160,7 @@ class QueuesStack(NestedStack):
                     queue,
                     resource,
                     queue_lt_security_groups,
-                    self._get_placement_group_for_compute_resource(queue, self.managed_placement_groups, resource),
+                    self._get_placement_for_compute_resource(queue, self.managed_placement_groups, resource),
                     self._compute_instance_profiles,
                     self._config.is_detailed_monitoring_enabled,
                 )
@@ -170,7 +177,7 @@ class QueuesStack(NestedStack):
         queue,
         compute_resource,
         queue_lt_security_groups,
-        placement_group,
+        placement,
         instance_profiles,
         is_detailed_monitoring_enabled,
     ):
@@ -304,7 +311,7 @@ class QueuesStack(NestedStack):
                     AWSApi.instance().ec2.describe_image(self._config.image_dict[queue.name]).device_name,
                 ),
                 network_interfaces=compute_lt_nw_interfaces,
-                placement=ec2.CfnLaunchTemplate.PlacementProperty(group_name=placement_group),
+                placement=placement,
                 image_id=self._config.image_dict[queue.name],
                 iam_instance_profile=ec2.CfnLaunchTemplate.IamInstanceProfileProperty(
                     name=instance_profiles[queue.name]

@@ -13,6 +13,7 @@
 # These objects are obtained from the configuration file through a conversion based on the Schema classes.
 #
 import logging
+import re
 from abc import abstractmethod
 from collections import defaultdict
 from enum import Enum
@@ -60,6 +61,7 @@ from pcluster.constants import (
     NODE_BOOTSTRAP_TIMEOUT,
     ONTAP,
     OPENZFS,
+    PLACEMENT_GROUP_ID_REGEX,
     ULTRASERVER_INSTANCE_PREFIX_LIST,
     Feature,
 )
@@ -765,7 +767,7 @@ class PlacementGroup(Resource):
         super().__init__(**kwargs)
         self.enabled = Resource.init_param(enabled)
         self.name = Resource.init_param(name)
-        self.id = Resource.init_param(id)  # Duplicate of name
+        self.id = Resource.init_param(id)
 
     def _register_validators(self, context: ValidatorContext = None):  # noqa: D102 #pylint: disable=unused-argument
         self._register_validator(PlacementGroupNamingValidator, placement_group=self)
@@ -774,6 +776,19 @@ class PlacementGroup(Resource):
     def assignment(self) -> str:
         """Check if the placement group has a name or id and get it, preferring the name if it exists."""
         return self.name or self.id
+
+    @property
+    def assignment_is_id(self) -> bool:
+        """Tell whether the assigned placement group has to be referenced by id rather than by name.
+
+        EC2 accepts a placement group either by name or by id, in distinct parameters, so an id has to be forwarded
+        as an id: passing it where a name is expected makes EC2 look for a group named after the id and fail.
+
+        The value is recognized by its format instead of by the config field it comes from, because Id and Name
+        used to be interchangeable spellings of the same parameter and existing configurations may well carry a
+        group name under Id.
+        """
+        return bool(self.assignment) and re.match(PLACEMENT_GROUP_ID_REGEX, self.assignment) is not None
 
     @property
     def enabled_or_assigned(self):
@@ -2446,15 +2461,15 @@ class _CommonQueue(BaseQueue):
     def get_placement_group_settings_for_compute_resource(
         self, compute_resource: _BaseSlurmComputeResource
     ) -> Dict[str, bool]:
-        # Placement Group key is None and not managed by default
-        placement_group_key, managed = None, False
+        # Placement Group key is None, not managed and not an id by default
+        placement_group_key, managed, is_id = None, False, False
         # prefer compute level groups over queue level groups
         chosen_pg = self.get_chosen_placement_group_setting_for_compute_resource(compute_resource)
         if chosen_pg.assignment:
-            placement_group_key, managed = chosen_pg.assignment, False
+            placement_group_key, managed, is_id = chosen_pg.assignment, False, chosen_pg.assignment_is_id
         elif chosen_pg.enabled:
             placement_group_key, managed = f"{self.name}-{compute_resource.name}", True
-        return {"key": placement_group_key, "is_managed": managed}
+        return {"key": placement_group_key, "is_managed": managed, "is_id": is_id}
 
     def is_placement_group_enabled_for_compute_resource(self, compute_resource: _BaseSlurmComputeResource) -> bool:
         return self.get_placement_group_settings_for_compute_resource(compute_resource).get("key") is not None

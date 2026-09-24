@@ -5,9 +5,16 @@ import pytest
 from assertpy import assert_that
 from freezegun import freeze_time
 
+from pcluster.config.cluster_config import (
+    PlacementGroup,
+    SlurmComputeResource,
+    SlurmComputeResourceNetworking,
+    SlurmQueue,
+    SlurmQueueNetworking,
+)
 from pcluster.schemas.cluster_schema import ClusterSchema
 from pcluster.templates.cdk_builder import CDKTemplateBuilder
-from pcluster.templates.queues_stack import add_network_interfaces
+from pcluster.templates.queues_stack import QueuesStack, add_network_interfaces
 from pcluster.utils import load_json_dict, load_yaml_dict
 from tests.pcluster.aws.dummy_aws_api import mock_aws_api
 from tests.pcluster.models.dummy_s3_bucket import dummy_cluster_bucket, mock_bucket_object_utils
@@ -431,3 +438,43 @@ def test_apply_launch_template_overrides(mocker, override_lt_data, expected_over
     assert mock_launch_template.add_property_override.call_count == len(expected_overrides)
     for path, value in expected_overrides:
         mock_launch_template.add_property_override.assert_any_call(path, value)
+
+
+@pytest.mark.parametrize(
+    "queue_placement_group, compute_resource_placement_group, expected_group_name, expected_group_id",
+    [
+        # No placement group configured
+        (PlacementGroup(implied=True), PlacementGroup(implied=True), None, None),
+        # Managed placement group: the launch template refers to the group created by the stack
+        (PlacementGroup(enabled=True), PlacementGroup(implied=True), "managed-pg-ref", None),
+        # Existing placement group given by name
+        (PlacementGroup(name="test-pg"), PlacementGroup(implied=True), "test-pg", None),
+        # A name given under Id keeps being treated as a name
+        (PlacementGroup(id="test-pg"), PlacementGroup(implied=True), "test-pg", None),
+        # An id is forwarded as an id, since EC2 resolves GroupName as a name only
+        (PlacementGroup(id="pg-08ffdeae747b4a0f1"), PlacementGroup(implied=True), None, "pg-08ffdeae747b4a0f1"),
+        # The compute resource level group overrides the queue level one
+        (PlacementGroup(name="queue-pg"), PlacementGroup(id="pg-08ffdeae747b4a0f1"), None, "pg-08ffdeae747b4a0f1"),
+    ],
+)
+def test_get_placement_for_compute_resource(
+    mocker, queue_placement_group, compute_resource_placement_group, expected_group_name, expected_group_id
+):
+    mock_aws_api(mocker)
+    compute_resource = SlurmComputeResource(
+        name="cr1",
+        instance_type="c5.xlarge",
+        networking=SlurmComputeResourceNetworking(placement_group=compute_resource_placement_group),
+    )
+    queue = SlurmQueue(
+        name="queue1",
+        networking=SlurmQueueNetworking(subnet_ids=["subnet-12345678"], placement_group=queue_placement_group),
+        compute_resources=[compute_resource],
+    )
+
+    placement = QueuesStack._get_placement_for_compute_resource(
+        queue, {"queue1-cr1": MagicMock(ref="managed-pg-ref")}, compute_resource
+    )
+
+    assert_that(placement.group_name).is_equal_to(expected_group_name)
+    assert_that(placement.group_id).is_equal_to(expected_group_id)

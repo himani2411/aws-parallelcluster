@@ -737,6 +737,32 @@ def test_placement_group_validator(
 
 
 @pytest.mark.parametrize(
+    "placement_group, describe_by_id_expected",
+    [
+        (PlacementGroup(enabled=True, name="test"), False),
+        # A name given under Id keeps being described by name
+        (PlacementGroup(enabled=True, id="test"), False),
+        # A group given by id has to be described through GroupIds, since GroupNames only resolves names
+        (PlacementGroup(enabled=True, id="pg-08ffdeae747b4a0f1"), True),
+    ],
+)
+def test_placement_group_validator_describe_by_id(mocker, placement_group, describe_by_id_expected):
+    mock_aws_api(mocker)
+    describe_by_name = mocker.patch("pcluster.aws.ec2.Ec2Client.describe_placement_group")
+    describe_by_id = mocker.patch("pcluster.aws.ec2.Ec2Client.describe_placement_group_by_id")
+
+    actual_failures = PlacementGroupNamingValidator().execute(placement_group=placement_group)
+
+    assert_failure_messages(actual_failures, None)
+    assert_that(describe_by_id.called).is_equal_to(describe_by_id_expected)
+    assert_that(describe_by_name.called).is_equal_to(not describe_by_id_expected)
+    if describe_by_id_expected:
+        describe_by_id.assert_called_with(placement_group.assignment)
+    else:
+        describe_by_name.assert_called_with(placement_group.assignment)
+
+
+@pytest.mark.parametrize(
     (
         "capacity_reservation_info",
         "instance_types",
@@ -1498,6 +1524,52 @@ def test_placement_group_capacity_reservation_validator(
         subnet=subnets[0],
         instance_types=instance_types,
         multi_az_enabled=multi_az_enabled,
+    )
+    assert_failure_messages(actual_failure, expected_message)
+
+
+@pytest.mark.parametrize(
+    "placement_group, describe_placement_group_by_id_side_effect, expected_message",
+    [
+        # The capacity reservation exposes its placement group by name, so the configured id is resolved into its
+        # name before the two are compared: they match and no failure is reported.
+        (
+            "pg-08ffdeae747b4a0f1",
+            None,
+            None,
+        ),
+        # The placement group cannot be described: PlacementGroupNamingValidator reports it, so this validator is
+        # not expected to report a failure of its own.
+        (
+            "pg-08ffdeae747b4a0f1",
+            AWSClientError("describe_placement_groups", "The placement group does not exist"),
+            None,
+        ),
+        # A group given by name is compared as is
+        ("mock-arn", None, None),
+    ],
+)
+def test_placement_group_capacity_reservation_validator_with_placement_group_id(
+    mocker, placement_group, describe_placement_group_by_id_side_effect, expected_message
+):
+    mock_aws_api(mocker)
+    mocker.patch(
+        "pcluster.aws.ec2.Ec2Client.describe_capacity_reservations",
+        side_effect=lambda capacity_reservation_ids: mock_capacity_reservations[1:2],
+    )
+    mocker.patch("pcluster.aws.ec2.Ec2Client.get_subnet_avail_zone", return_value="mock-zone")
+    mocker.patch(
+        "pcluster.aws.ec2.Ec2Client.describe_placement_group_by_id",
+        return_value={"PlacementGroups": [{"GroupName": "mock-arn", "GroupId": placement_group}]},
+        side_effect=describe_placement_group_by_id_side_effect,
+    )
+
+    actual_failure = PlacementGroupCapacityReservationValidator().execute(
+        placement_group=placement_group,
+        odcr=CapacityReservationTarget(capacity_reservation_id="cr-321"),
+        subnet="mock-subnet-1",
+        instance_types=["mock-type"],
+        multi_az_enabled=False,
     )
     assert_failure_messages(actual_failure, expected_message)
 

@@ -553,11 +553,11 @@ class TestBaseClusterConfig:
                     compute_resources=mock_compute_resources,
                 ),
                 [
-                    {"key": None, "is_managed": False},
-                    {"key": "queue-test2", "is_managed": True},
-                    {"key": None, "is_managed": False},
-                    {"key": "test", "is_managed": False},
-                    {"key": "test", "is_managed": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "queue-test2", "is_managed": True, "is_id": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
                 ],
             ),
             (
@@ -567,11 +567,11 @@ class TestBaseClusterConfig:
                     compute_resources=mock_compute_resources,
                 ),
                 [
-                    {"key": "queue-test1", "is_managed": True},
-                    {"key": "queue-test2", "is_managed": True},
-                    {"key": None, "is_managed": False},
-                    {"key": "test", "is_managed": False},
-                    {"key": "test", "is_managed": False},
+                    {"key": "queue-test1", "is_managed": True, "is_id": False},
+                    {"key": "queue-test2", "is_managed": True, "is_id": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
                 ],
             ),
             (
@@ -581,11 +581,11 @@ class TestBaseClusterConfig:
                     compute_resources=mock_compute_resources,
                 ),
                 [
-                    {"key": "test-q", "is_managed": False},
-                    {"key": "queue-test2", "is_managed": True},
-                    {"key": None, "is_managed": False},
-                    {"key": "test", "is_managed": False},
-                    {"key": "test", "is_managed": False},
+                    {"key": "test-q", "is_managed": False, "is_id": False},
+                    {"key": "queue-test2", "is_managed": True, "is_id": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
                 ],
             ),
             (
@@ -595,11 +595,29 @@ class TestBaseClusterConfig:
                     compute_resources=mock_compute_resources,
                 ),
                 [
-                    {"key": None, "is_managed": False},
-                    {"key": "queue-test2", "is_managed": True},
-                    {"key": None, "is_managed": False},
-                    {"key": "test", "is_managed": False},
-                    {"key": "test", "is_managed": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "queue-test2", "is_managed": True, "is_id": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                ],
+            ),
+            # A group given by id is flagged as such, so that it can be referenced by id, while a name given under
+            # Id keeps being treated as a name.
+            (
+                dict(
+                    name="queue",
+                    networking=SlurmQueueNetworking(
+                        subnet_ids=[], placement_group=PlacementGroup(id="pg-08ffdeae747b4a0f1")
+                    ),
+                    compute_resources=mock_compute_resources,
+                ),
+                [
+                    {"key": "pg-08ffdeae747b4a0f1", "is_managed": False, "is_id": True},
+                    {"key": "queue-test2", "is_managed": True, "is_id": False},
+                    {"key": None, "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "test", "is_managed": False, "is_id": False},
                 ],
             ),
         ],

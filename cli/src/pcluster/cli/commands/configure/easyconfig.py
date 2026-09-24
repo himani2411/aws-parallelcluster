@@ -249,7 +249,7 @@ def configure(args):  # noqa: C901
             placement_group = {"Enabled": True}
             placement_group_name = _prompt_for_placement_group()
             if placement_group_name:
-                placement_group["Id"] = placement_group_name
+                placement_group["Name"] = placement_group_name
 
             networking = queue.get("Networking", {})
             networking["PlacementGroup"] = placement_group
