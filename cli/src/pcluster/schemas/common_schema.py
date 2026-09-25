@@ -31,6 +31,7 @@ ALLOWED_VALUES = {
     r"([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])"
     r"(\/([0-9]|[1-2][0-9]|3[0-2]))$",
     "file_path": r"^\/?[^\/.\\][^\/\\]*(\/[^\/.\\][^\/]*)*$",
+    "placement_group_id": r"^pg-[0-9a-f]{8}$|^pg-[0-9a-f]{17}$",
     "prefix-list": r"^pl-[a-zA-Z0-9]",
     "security_group_id": r"^sg-[0-9a-z]{8}$|^sg-[0-9a-z]{17}$",
     "subnet_id": r"^subnet-[0-9a-z]{8}$|^subnet-[0-9a-z]{17}$",

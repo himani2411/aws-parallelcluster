@@ -449,8 +449,6 @@ def test_apply_launch_template_overrides(mocker, override_lt_data, expected_over
         (PlacementGroup(enabled=True), PlacementGroup(implied=True), "managed-pg-ref", None),
         # Existing placement group given by name
         (PlacementGroup(name="test-pg"), PlacementGroup(implied=True), "test-pg", None),
-        # A name given under Id keeps being treated as a name
-        (PlacementGroup(id="test-pg"), PlacementGroup(implied=True), "test-pg", None),
         # An id is forwarded as an id, since EC2 resolves GroupName as a name only
         (PlacementGroup(id="pg-08ffdeae747b4a0f1"), PlacementGroup(implied=True), None, "pg-08ffdeae747b4a0f1"),
         # The compute resource level group overrides the queue level one

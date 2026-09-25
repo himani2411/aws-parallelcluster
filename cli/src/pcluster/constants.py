@@ -113,9 +113,6 @@ FSX_VOLUME_ID_REGEX = r"^fsvol-[0-9a-f]{17}$"
 # https://docs.aws.amazon.com/fsx/latest/APIReference/API_FileCacheCreating.html#FSx-Type-FileCacheCreating-FileCacheId:~:text=Pattern%3A-,%5E(fc%2D%5B0%2D9a%2Df%5D%7B8%2C%7D)%24,-Required%3A%20No
 FILE_CACHE_ID_REGEX = r"^(fc-[0-9a-f]{8,18})$"
 
-# Placement group identifier, as returned by EC2 in the GroupId field of DescribePlacementGroups.
-PLACEMENT_GROUP_ID_REGEX = r"^pg-[0-9a-f]{8}$|^pg-[0-9a-f]{17}$"
-
 FSX_PORTS = {
     # Lustre Security group: https://docs.aws.amazon.com/fsx/latest/LustreGuide/limit-access-security-groups.html
     LUSTRE: {"tcp": [988]},

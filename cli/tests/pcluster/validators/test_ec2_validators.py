@@ -623,7 +623,7 @@ def test_compute_ami_os_compatible_validator(mocker, image_id, os, ami_info, exp
     "placement_group, describe_placement_group_return, side_effect, expected_message",
     [
         (
-            PlacementGroup(enabled=True, id="test"),
+            PlacementGroup(enabled=True, id="pg-0123456789abcdef0"),
             {
                 "PlacementGroups": [
                     {"GroupName": "test", "State": "available", "Strategy": "cluster", "GroupId": "pg-0123"}
@@ -653,7 +653,7 @@ def test_compute_ami_os_compatible_validator(mocker, image_id, os, ami_info, exp
             None,
         ),
         (
-            PlacementGroup(id="test"),
+            PlacementGroup(id="pg-0123456789abcdef0"),
             {
                 "PlacementGroups": [
                     {"GroupName": "test", "State": "available", "Strategy": "cluster", "GroupId": "pg-0123"}
@@ -673,10 +673,13 @@ def test_compute_ami_os_compatible_validator(mocker, image_id, os, ami_info, exp
             None,
         ),
         (
-            PlacementGroup(id="test"),
+            PlacementGroup(id="pg-0123456789abcdef0"),
             None,
-            AWSClientError(function_name="describe_placement_group", message="The Placement Group 'test' is unknown"),
-            "The Placement Group 'test' is unknown",
+            AWSClientError(
+                function_name="describe_placement_group",
+                message="The Placement Group 'pg-0123456789abcdef0' is unknown",
+            ),
+            "The Placement Group 'pg-0123456789abcdef0' is unknown",
         ),
         (
             PlacementGroup(name="test"),
@@ -685,7 +688,7 @@ def test_compute_ami_os_compatible_validator(mocker, image_id, os, ami_info, exp
             "The Placement Group 'test' is unknown",
         ),
         (
-            PlacementGroup(enabled=False, id="test"),
+            PlacementGroup(enabled=False, id="pg-0123456789abcdef0"),
             {
                 "PlacementGroups": [
                     {"GroupName": "test", "State": "available", "Strategy": "cluster", "GroupId": "pg-0123"}
@@ -711,7 +714,7 @@ def test_compute_ami_os_compatible_validator(mocker, image_id, os, ami_info, exp
             "with the Name/Id given",
         ),
         (
-            PlacementGroup(enabled=True, id="test", name="test2"),
+            PlacementGroup(enabled=True, id="pg-0123456789abcdef0", name="test2"),
             {
                 "PlacementGroups": [
                     {"GroupName": "test", "State": "available", "Strategy": "cluster", "GroupId": "pg-0123"}
@@ -727,11 +730,12 @@ def test_placement_group_validator(
     mocker, placement_group, describe_placement_group_return, side_effect, expected_message
 ):
     mock_aws_api(mocker)
-    mocker.patch(
-        "pcluster.aws.ec2.Ec2Client.describe_placement_group",
-        return_value=describe_placement_group_return,
-        side_effect=side_effect,
-    )
+    for describe in ("describe_placement_group", "describe_placement_group_by_id"):
+        mocker.patch(
+            f"pcluster.aws.ec2.Ec2Client.{describe}",
+            return_value=describe_placement_group_return,
+            side_effect=side_effect,
+        )
     actual_failures = PlacementGroupNamingValidator().execute(placement_group=placement_group)
     assert_failure_messages(actual_failures, expected_message)
 
@@ -739,10 +743,9 @@ def test_placement_group_validator(
 @pytest.mark.parametrize(
     "placement_group, describe_by_id_expected",
     [
+        # A group given by name is described through GroupNames
         (PlacementGroup(enabled=True, name="test"), False),
-        # A name given under Id keeps being described by name
-        (PlacementGroup(enabled=True, id="test"), False),
-        # A group given by id has to be described through GroupIds, since GroupNames only resolves names
+        # A group given by id is described through GroupIds, since GroupNames only resolves names
         (PlacementGroup(enabled=True, id="pg-08ffdeae747b4a0f1"), True),
     ],
 )
@@ -1520,6 +1523,7 @@ def test_placement_group_capacity_reservation_validator(
     mocker.patch("pcluster.aws.ec2.Ec2Client.get_subnet_avail_zone", return_value=desired_availability_zone)
     actual_failure = PlacementGroupCapacityReservationValidator().execute(
         placement_group=placement_group,
+        placement_group_is_id=False,
         odcr=odcr,
         subnet=subnets[0],
         instance_types=instance_types,
@@ -1529,12 +1533,13 @@ def test_placement_group_capacity_reservation_validator(
 
 
 @pytest.mark.parametrize(
-    "placement_group, describe_placement_group_by_id_side_effect, expected_message",
+    "placement_group, placement_group_is_id, describe_placement_group_by_id_side_effect, expected_message",
     [
         # The capacity reservation exposes its placement group by name, so the configured id is resolved into its
         # name before the two are compared: they match and no failure is reported.
         (
             "pg-08ffdeae747b4a0f1",
+            True,
             None,
             None,
         ),
@@ -1542,15 +1547,16 @@ def test_placement_group_capacity_reservation_validator(
         # not expected to report a failure of its own.
         (
             "pg-08ffdeae747b4a0f1",
+            True,
             AWSClientError("describe_placement_groups", "The placement group does not exist"),
             None,
         ),
-        # A group given by name is compared as is
-        ("mock-arn", None, None),
+        # A group given by name is compared as is, without being resolved
+        ("mock-arn", False, None, None),
     ],
 )
 def test_placement_group_capacity_reservation_validator_with_placement_group_id(
-    mocker, placement_group, describe_placement_group_by_id_side_effect, expected_message
+    mocker, placement_group, placement_group_is_id, describe_placement_group_by_id_side_effect, expected_message
 ):
     mock_aws_api(mocker)
     mocker.patch(
@@ -1566,6 +1572,7 @@ def test_placement_group_capacity_reservation_validator_with_placement_group_id(
 
     actual_failure = PlacementGroupCapacityReservationValidator().execute(
         placement_group=placement_group,
+        placement_group_is_id=placement_group_is_id,
         odcr=CapacityReservationTarget(capacity_reservation_id="cr-321"),
         subnet="mock-subnet-1",
         instance_types=["mock-type"],

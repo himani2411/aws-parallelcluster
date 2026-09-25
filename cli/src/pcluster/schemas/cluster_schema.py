@@ -720,7 +720,10 @@ class PlacementGroupSchema(BaseSchema):
     """Represent the schema of placement group."""
 
     enabled = fields.Bool(metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP})
-    id = fields.Str(metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP})
+    id = fields.Str(
+        validate=get_field_validator("placement_group_id"),
+        metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP},
+    )
     name = fields.Str(metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP})
 
     @post_load

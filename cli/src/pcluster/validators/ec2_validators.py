@@ -24,7 +24,6 @@ from pcluster.constants import (
     CAPACITY_RESERVATION_OS_MAP,
     NVIDIA_OPENRM_UNSUPPORTED_INSTANCE_TYPES,
     P6_B300,
-    PLACEMENT_GROUP_ID_REGEX,
     SUPPORTED_OSES_FOR_P6_B300,
     SUPPORTED_OSES_FOR_P6E_GB200,
     ULTRASERVER_CAPACITY_BLOCK_ALLOWED_SIZE_DICT,
@@ -271,7 +270,7 @@ class PlacementGroupNamingValidator(Validator):
                 )
             else:
                 try:
-                    if placement_group.assignment_is_id:
+                    if placement_group.id:
                         AWSApi.instance().ec2.describe_placement_group_by_id(identifier)
                     else:
                         AWSApi.instance().ec2.describe_placement_group(identifier)
@@ -792,19 +791,18 @@ class PlacementGroupCapacityReservationValidator(Validator):
                 )
 
     @staticmethod
-    def _resolve_placement_group_name(placement_group):
-        """Return the name of the given placement group, which may be expressed as an id.
+    def _resolve_placement_group_name(placement_group_id):
+        """Return the name of the placement group with the given id.
 
         The placement group of a capacity reservation is only exposed as an ARN, hence by name, so a placement group
         given by id has to be resolved into its name before the two can be compared.
         """
-        if re.match(PLACEMENT_GROUP_ID_REGEX, placement_group):
-            placement_groups = AWSApi.instance().ec2.describe_placement_group_by_id(placement_group)["PlacementGroups"]
-            if placement_groups:
-                return placement_groups[0].get("GroupName") or placement_group
-        return placement_group
+        placement_groups = AWSApi.instance().ec2.describe_placement_group_by_id(placement_group_id)["PlacementGroups"]
+        if not placement_groups:
+            return placement_group_id
+        return placement_groups[0].get("GroupName") or placement_group_id
 
-    def _validate(self, placement_group, odcr, subnet, instance_types, multi_az_enabled):
+    def _validate(self, placement_group, placement_group_is_id, odcr, subnet, instance_types, multi_az_enabled):
         if not multi_az_enabled:
             odcr_id = getattr(odcr, "capacity_reservation_id", None)
             odcr_arn = getattr(odcr, "capacity_reservation_resource_group_arn", None)
@@ -820,12 +818,14 @@ class PlacementGroupCapacityReservationValidator(Validator):
             # then it is ok to rely on the reservation placement group.
             if capacity_reservations:
                 if placement_group:
-                    try:
-                        chosen_pg = self._resolve_placement_group_name(placement_group)
-                    except AWSClientError:
-                        # The placement group cannot be described, which PlacementGroupNamingValidator already
-                        # reports: there is nothing to compare the capacity reservations against.
-                        return
+                    chosen_pg = placement_group
+                    if placement_group_is_id:
+                        try:
+                            chosen_pg = self._resolve_placement_group_name(placement_group)
+                        except AWSClientError:
+                            # The placement group cannot be described, which PlacementGroupNamingValidator already
+                            # reports: there is nothing to compare the capacity reservations against.
+                            return
                     self._validate_chosen_pg(
                         subnet=subnet,
                         instance_types=instance_types,

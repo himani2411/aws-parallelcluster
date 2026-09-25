@@ -67,7 +67,7 @@ mock_compute_resources = [
     SlurmComputeResource(
         instance_type="test",
         name="test5",
-        networking=SlurmComputeResourceNetworking(placement_group=PlacementGroup(id="test")),
+        networking=SlurmComputeResourceNetworking(placement_group=PlacementGroup(id="pg-0123456789abcdef0")),
     ),
 ]
 
@@ -557,7 +557,7 @@ class TestBaseClusterConfig:
                     {"key": "queue-test2", "is_managed": True, "is_id": False},
                     {"key": None, "is_managed": False, "is_id": False},
                     {"key": "test", "is_managed": False, "is_id": False},
-                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "pg-0123456789abcdef0", "is_managed": False, "is_id": True},
                 ],
             ),
             (
@@ -571,7 +571,7 @@ class TestBaseClusterConfig:
                     {"key": "queue-test2", "is_managed": True, "is_id": False},
                     {"key": None, "is_managed": False, "is_id": False},
                     {"key": "test", "is_managed": False, "is_id": False},
-                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "pg-0123456789abcdef0", "is_managed": False, "is_id": True},
                 ],
             ),
             (
@@ -585,7 +585,7 @@ class TestBaseClusterConfig:
                     {"key": "queue-test2", "is_managed": True, "is_id": False},
                     {"key": None, "is_managed": False, "is_id": False},
                     {"key": "test", "is_managed": False, "is_id": False},
-                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "pg-0123456789abcdef0", "is_managed": False, "is_id": True},
                 ],
             ),
             (
@@ -599,11 +599,10 @@ class TestBaseClusterConfig:
                     {"key": "queue-test2", "is_managed": True, "is_id": False},
                     {"key": None, "is_managed": False, "is_id": False},
                     {"key": "test", "is_managed": False, "is_id": False},
-                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "pg-0123456789abcdef0", "is_managed": False, "is_id": True},
                 ],
             ),
-            # A group given by id is flagged as such, so that it can be referenced by id, while a name given under
-            # Id keeps being treated as a name.
+            # A group given by id is flagged as such, so that it can be referenced by id
             (
                 dict(
                     name="queue",
@@ -617,7 +616,7 @@ class TestBaseClusterConfig:
                     {"key": "queue-test2", "is_managed": True, "is_id": False},
                     {"key": None, "is_managed": False, "is_id": False},
                     {"key": "test", "is_managed": False, "is_id": False},
-                    {"key": "test", "is_managed": False, "is_id": False},
+                    {"key": "pg-0123456789abcdef0", "is_managed": False, "is_id": True},
                 ],
             ),
         ],

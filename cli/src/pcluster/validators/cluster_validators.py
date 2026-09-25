@@ -1352,14 +1352,12 @@ class ComputeResourceLaunchTemplateValidator(_LaunchTemplateValidator):
             compute_resource_placement_group = queue.get_chosen_placement_group_setting_for_compute_resource(
                 dry_run_compute_resource
             )
-            placement_group_assignment = compute_resource_placement_group.assignment
-            if not placement_group_assignment:
-                placement_group = {}
-            elif compute_resource_placement_group.assignment_is_id:
-                # An id has to be passed as an id: EC2 resolves GroupName as a name only.
-                placement_group = {"GroupId": placement_group_assignment}
+            if compute_resource_placement_group.id:
+                placement_group = {"GroupId": compute_resource_placement_group.id}
+            elif compute_resource_placement_group.name:
+                placement_group = {"GroupName": compute_resource_placement_group.name}
             else:
-                placement_group = {"GroupName": placement_group_assignment}
+                placement_group = {}
 
             # For SlurmFlexibleComputeResource test only the first InstanceType through a RunInstances
             self._test_compute_resource(
