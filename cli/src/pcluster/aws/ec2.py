@@ -256,19 +256,15 @@ class Ec2Client(Boto3Client):
         return self._client.describe_key_pairs(KeyNames=[key_name])
 
     @AWSExceptionHandler.handle_client_exception
-    def describe_placement_group(self, group_name):
-        """Return the given placement group, if exists."""
-        return self._client.describe_placement_groups(GroupNames=[group_name])
-
-    @AWSExceptionHandler.handle_client_exception
     @Cache.cached
-    def describe_placement_group_by_id(self, group_id):
+    def describe_placement_group(self, group_name=None, group_id=None):
         """Return the given placement group, if exists.
 
-        DescribePlacementGroups takes names and ids in distinct parameters, so a group identified by id has to be
-        looked up through GroupIds.
+        DescribePlacementGroups takes names and ids in distinct parameters, so the group is looked up through the one
+        it is identified by, preferring the id when both are given.
         """
-        return self._client.describe_placement_groups(GroupIds=[group_id])
+        group_filter = {"GroupIds": [group_id]} if group_id else {"GroupNames": [group_name]}
+        return self._client.describe_placement_groups(**group_filter)
 
     @AWSExceptionHandler.handle_client_exception
     def describe_vpc_attribute(self, vpc_id, attribute):

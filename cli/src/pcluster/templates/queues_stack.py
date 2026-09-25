@@ -98,7 +98,7 @@ class QueuesStack(NestedStack):
         self._add_resources()
 
     @staticmethod
-    def _get_placement_for_compute_resource(
+    def _get_placement_group_for_compute_resource(
         queue, managed_placement_groups, compute_resource
     ) -> ec2.CfnLaunchTemplate.PlacementProperty:
         placement_group_settings = queue.get_placement_group_settings_for_compute_resource(compute_resource)
@@ -160,7 +160,7 @@ class QueuesStack(NestedStack):
                     queue,
                     resource,
                     queue_lt_security_groups,
-                    self._get_placement_for_compute_resource(queue, self.managed_placement_groups, resource),
+                    self._get_placement_group_for_compute_resource(queue, self.managed_placement_groups, resource),
                     self._compute_instance_profiles,
                     self._config.is_detailed_monitoring_enabled,
                 )
@@ -177,7 +177,7 @@ class QueuesStack(NestedStack):
         queue,
         compute_resource,
         queue_lt_security_groups,
-        placement,
+        placement_group,
         instance_profiles,
         is_detailed_monitoring_enabled,
     ):
@@ -311,7 +311,7 @@ class QueuesStack(NestedStack):
                     AWSApi.instance().ec2.describe_image(self._config.image_dict[queue.name]).device_name,
                 ),
                 network_interfaces=compute_lt_nw_interfaces,
-                placement=placement,
+                placement=placement_group,
                 image_id=self._config.image_dict[queue.name],
                 iam_instance_profile=ec2.CfnLaunchTemplate.IamInstanceProfileProperty(
                     name=instance_profiles[queue.name]

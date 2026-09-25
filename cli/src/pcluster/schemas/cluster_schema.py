@@ -724,7 +724,10 @@ class PlacementGroupSchema(BaseSchema):
         validate=get_field_validator("placement_group_id"),
         metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP},
     )
-    name = fields.Str(metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP})
+    name = fields.Str(
+        validate=get_field_validator("placement_group_name"),
+        metadata={"update_policy": UpdatePolicy.MANAGED_PLACEMENT_GROUP},
+    )
 
     @post_load
     def make_resource(self, data, **kwargs):

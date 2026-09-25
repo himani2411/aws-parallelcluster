@@ -270,10 +270,9 @@ class PlacementGroupNamingValidator(Validator):
                 )
             else:
                 try:
-                    if placement_group.id:
-                        AWSApi.instance().ec2.describe_placement_group_by_id(identifier)
-                    else:
-                        AWSApi.instance().ec2.describe_placement_group(identifier)
+                    AWSApi.instance().ec2.describe_placement_group(
+                        group_name=placement_group.name, group_id=placement_group.id
+                    )
                 except AWSClientError as e:
                     self._add_failure(str(e), FailureLevel.ERROR)
 
@@ -797,7 +796,9 @@ class PlacementGroupCapacityReservationValidator(Validator):
         The placement group of a capacity reservation is only exposed as an ARN, hence by name, so a placement group
         given by id has to be resolved into its name before the two can be compared.
         """
-        placement_groups = AWSApi.instance().ec2.describe_placement_group_by_id(placement_group_id)["PlacementGroups"]
+        placement_groups = AWSApi.instance().ec2.describe_placement_group(group_id=placement_group_id)[
+            "PlacementGroups"
+        ]
         if not placement_groups:
             return placement_group_id
         return placement_groups[0].get("GroupName") or placement_group_id

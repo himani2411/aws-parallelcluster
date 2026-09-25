@@ -774,3 +774,23 @@ def test_is_subnet_public_with_main_route_table(boto3_stubber, subnet_id, routes
     boto3_stubber("ec2", mocked_requests)
 
     assert AWSApi.instance().ec2.is_subnet_public(subnet_id) is expected_result
+
+
+@pytest.mark.parametrize(
+    "group_name, group_id, expected_params",
+    [
+        ("test-pg", None, {"GroupNames": ["test-pg"]}),
+        (None, "pg-08ffdeae747b4a0f1", {"GroupIds": ["pg-08ffdeae747b4a0f1"]}),
+        # An id identifies the group on its own, so it is preferred over a name given alongside it
+        ("test-pg", "pg-08ffdeae747b4a0f1", {"GroupIds": ["pg-08ffdeae747b4a0f1"]}),
+    ],
+)
+def test_describe_placement_group(boto3_stubber, group_name, group_id, expected_params):
+    """Verify that a placement group is looked up through the parameter it is identified by."""
+    response = {"PlacementGroups": [{"GroupName": "test-pg", "GroupId": "pg-08ffdeae747b4a0f1"}]}
+    boto3_stubber(
+        "ec2",
+        [MockedBoto3Request(method="describe_placement_groups", expected_params=expected_params, response=response)],
+    )
+
+    assert_that(Ec2Client().describe_placement_group(group_name=group_name, group_id=group_id)).is_equal_to(response)

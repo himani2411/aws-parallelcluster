@@ -455,7 +455,7 @@ def test_apply_launch_template_overrides(mocker, override_lt_data, expected_over
         (PlacementGroup(name="queue-pg"), PlacementGroup(id="pg-08ffdeae747b4a0f1"), None, "pg-08ffdeae747b4a0f1"),
     ],
 )
-def test_get_placement_for_compute_resource(
+def test_get_placement_group_for_compute_resource(
     mocker, queue_placement_group, compute_resource_placement_group, expected_group_name, expected_group_id
 ):
     mock_aws_api(mocker)
@@ -470,7 +470,7 @@ def test_get_placement_for_compute_resource(
         compute_resources=[compute_resource],
     )
 
-    placement = QueuesStack._get_placement_for_compute_resource(
+    placement = QueuesStack._get_placement_group_for_compute_resource(
         queue, {"queue1-cr1": MagicMock(ref="managed-pg-ref")}, compute_resource
     )
 

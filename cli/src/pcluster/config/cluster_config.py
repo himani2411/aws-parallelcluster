@@ -776,6 +776,15 @@ class PlacementGroup(Resource):
         return self.name or self.id
 
     @property
+    def placement(self) -> dict:
+        """Return the EC2 Placement parameters referencing this placement group, empty if none is assigned."""
+        if self.id:
+            return {"GroupId": self.id}
+        if self.name:
+            return {"GroupName": self.name}
+        return {}
+
+    @property
     def enabled_or_assigned(self):
         """Check if a placement group was enabled or passed as parameter."""
         return self.enabled or self.assignment is not None

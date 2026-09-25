@@ -730,39 +730,35 @@ def test_placement_group_validator(
     mocker, placement_group, describe_placement_group_return, side_effect, expected_message
 ):
     mock_aws_api(mocker)
-    for describe in ("describe_placement_group", "describe_placement_group_by_id"):
-        mocker.patch(
-            f"pcluster.aws.ec2.Ec2Client.{describe}",
-            return_value=describe_placement_group_return,
-            side_effect=side_effect,
-        )
+    mocker.patch(
+        "pcluster.aws.ec2.Ec2Client.describe_placement_group",
+        return_value=describe_placement_group_return,
+        side_effect=side_effect,
+    )
     actual_failures = PlacementGroupNamingValidator().execute(placement_group=placement_group)
     assert_failure_messages(actual_failures, expected_message)
 
 
 @pytest.mark.parametrize(
-    "placement_group, describe_by_id_expected",
+    "placement_group, expected_lookup",
     [
-        # A group given by name is described through GroupNames
-        (PlacementGroup(enabled=True, name="test"), False),
-        # A group given by id is described through GroupIds, since GroupNames only resolves names
-        (PlacementGroup(enabled=True, id="pg-08ffdeae747b4a0f1"), True),
+        # A group given by name is looked up by name
+        (PlacementGroup(enabled=True, name="test"), {"group_name": "test", "group_id": None}),
+        # A group given by id is looked up by id, since GroupNames only resolves names
+        (
+            PlacementGroup(enabled=True, id="pg-08ffdeae747b4a0f1"),
+            {"group_name": None, "group_id": "pg-08ffdeae747b4a0f1"},
+        ),
     ],
 )
-def test_placement_group_validator_describe_by_id(mocker, placement_group, describe_by_id_expected):
+def test_placement_group_validator_lookup(mocker, placement_group, expected_lookup):
     mock_aws_api(mocker)
-    describe_by_name = mocker.patch("pcluster.aws.ec2.Ec2Client.describe_placement_group")
-    describe_by_id = mocker.patch("pcluster.aws.ec2.Ec2Client.describe_placement_group_by_id")
+    describe_placement_group = mocker.patch("pcluster.aws.ec2.Ec2Client.describe_placement_group")
 
     actual_failures = PlacementGroupNamingValidator().execute(placement_group=placement_group)
 
     assert_failure_messages(actual_failures, None)
-    assert_that(describe_by_id.called).is_equal_to(describe_by_id_expected)
-    assert_that(describe_by_name.called).is_equal_to(not describe_by_id_expected)
-    if describe_by_id_expected:
-        describe_by_id.assert_called_with(placement_group.assignment)
-    else:
-        describe_by_name.assert_called_with(placement_group.assignment)
+    describe_placement_group.assert_called_once_with(**expected_lookup)
 
 
 @pytest.mark.parametrize(
@@ -1533,7 +1529,7 @@ def test_placement_group_capacity_reservation_validator(
 
 
 @pytest.mark.parametrize(
-    "placement_group, placement_group_is_id, describe_placement_group_by_id_side_effect, expected_message",
+    "placement_group, placement_group_is_id, describe_placement_group_side_effect, expected_message",
     [
         # The capacity reservation exposes its placement group by name, so the configured id is resolved into its
         # name before the two are compared: they match and no failure is reported.
@@ -1556,7 +1552,7 @@ def test_placement_group_capacity_reservation_validator(
     ],
 )
 def test_placement_group_capacity_reservation_validator_with_placement_group_id(
-    mocker, placement_group, placement_group_is_id, describe_placement_group_by_id_side_effect, expected_message
+    mocker, placement_group, placement_group_is_id, describe_placement_group_side_effect, expected_message
 ):
     mock_aws_api(mocker)
     mocker.patch(
@@ -1565,9 +1561,9 @@ def test_placement_group_capacity_reservation_validator_with_placement_group_id(
     )
     mocker.patch("pcluster.aws.ec2.Ec2Client.get_subnet_avail_zone", return_value="mock-zone")
     mocker.patch(
-        "pcluster.aws.ec2.Ec2Client.describe_placement_group_by_id",
+        "pcluster.aws.ec2.Ec2Client.describe_placement_group",
         return_value={"PlacementGroups": [{"GroupName": "mock-arn", "GroupId": placement_group}]},
-        side_effect=describe_placement_group_by_id_side_effect,
+        side_effect=describe_placement_group_side_effect,
     )
 
     actual_failure = PlacementGroupCapacityReservationValidator().execute(

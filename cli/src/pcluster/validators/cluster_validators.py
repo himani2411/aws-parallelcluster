@@ -1352,12 +1352,6 @@ class ComputeResourceLaunchTemplateValidator(_LaunchTemplateValidator):
             compute_resource_placement_group = queue.get_chosen_placement_group_setting_for_compute_resource(
                 dry_run_compute_resource
             )
-            if compute_resource_placement_group.id:
-                placement_group = {"GroupId": compute_resource_placement_group.id}
-            elif compute_resource_placement_group.name:
-                placement_group = {"GroupName": compute_resource_placement_group.name}
-            else:
-                placement_group = {}
 
             # For SlurmFlexibleComputeResource test only the first InstanceType through a RunInstances
             self._test_compute_resource(
@@ -1368,7 +1362,7 @@ class ComputeResourceLaunchTemplateValidator(_LaunchTemplateValidator):
                 ami_id=ami_id,
                 subnet_id=queue_subnet_id,
                 security_groups_ids=queue_security_groups,
-                placement_group=placement_group,
+                placement_group=compute_resource_placement_group.placement,
                 tags=tags,
                 imds_support=imds_support,
             )

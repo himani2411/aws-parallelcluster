@@ -32,6 +32,8 @@ ALLOWED_VALUES = {
     r"(\/([0-9]|[1-2][0-9]|3[0-2]))$",
     "file_path": r"^\/?[^\/.\\][^\/\\]*(\/[^\/.\\][^\/]*)*$",
     "placement_group_id": r"^pg-[0-9a-f]{8}$|^pg-[0-9a-f]{17}$",
+    # https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_CreatePlacementGroup.html: up to 255 ASCII characters
+    "placement_group_name": r"^[\x20-\x7E]{1,255}$",
     "prefix-list": r"^pl-[a-zA-Z0-9]",
     "security_group_id": r"^sg-[0-9a-z]{8}$|^sg-[0-9a-z]{17}$",
     "subnet_id": r"^subnet-[0-9a-z]{8}$|^subnet-[0-9a-z]{17}$",
