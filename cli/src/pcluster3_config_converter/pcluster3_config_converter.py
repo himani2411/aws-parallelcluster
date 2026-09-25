@@ -525,7 +525,8 @@ class Pcluster3ConfigConverter(object):
         if placement == "DYNAMIC":
             placement_group["Enabled"] = True
         elif placement:
-            placement_group["Id"] = placement
+            # The placement_group setting of ParallelCluster 2 holds the name of a placement group
+            placement_group["Name"] = placement
         _add_if(networking, "PlacementGroup", placement_group)
 
         proxy = dict()

@@ -9,12 +9,12 @@ CHANGELOG
   adding progress reporting, and supporting running on deleted clusters.
 
 **CHANGES**
+- `PlacementGroup/Id` only accepts the id of a placement group: use `PlacementGroup/Name` to assign one by name.
+  A cluster configuration carrying a name under `PlacementGroup/Id` is rejected.
 - Add support for Python 3.14 in the pcluster CLI.
 - Update the default root volume size to 50 GB.
 
 **BUG FIXES**
-- Fix the placement group given in `PlacementGroup/Id` being passed to EC2 as a placement group name, which made the
-  assignment of an existing placement group by id fail.
 - Fix `build-image` with `UpdateOs` enabled failing in proxied environments.
 - Fix issue with validator `ExistingFsxNetworkingValidator` so that, when a shared storage does not return network interfaces, 
 the validator fails with a clear error message instead of a generic `NoneType` error.

@@ -173,7 +173,7 @@ Scheduling:
           - sg-12345679
         PlacementGroup:
           Enabled: true
-          Id: String
+          Id: pg-12345678
         Proxy:
           HttpProxyAddress: https://proxy-address:port
       ComputeResources:

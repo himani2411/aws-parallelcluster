@@ -1004,7 +1004,7 @@ Scheduling:
         AdditionalSecurityGroups:
           - sg-xxxxxx
         PlacementGroup:
-          Id: placement_group_id
+          Name: placement_group_id
         Proxy:
           HttpProxyAddress: https://x.x.x.x:8080
         SecurityGroups:
@@ -1122,7 +1122,7 @@ Scheduling:
         AdditionalSecurityGroups:
           - sg-xxxxxx
         PlacementGroup:
-          Id: placement_group_id
+          Name: placement_group_id
         Proxy:
           HttpProxyAddress: https://x.x.x.x:8080
         SecurityGroups:

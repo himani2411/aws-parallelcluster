@@ -186,7 +186,7 @@ Scheduling:
           {% endfor %}
         PlacementGroup:
           Enabled: true
-          Id: String
+          Id: pg-12345678
         Proxy:
           HttpProxyAddress: https://proxy-address:port
       ComputeResources:
@@ -206,7 +206,7 @@ Scheduling:
           Networking:
             PlacementGroup:
               Enabled: true
-              Id: String
+              Id: pg-12345678
           Tags:
             {% for i in range(number_of_tags) %}
             - Key: extremely_long_computetag_key{{ i }}
