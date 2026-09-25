@@ -2455,15 +2455,15 @@ class _CommonQueue(BaseQueue):
     def get_placement_group_settings_for_compute_resource(
         self, compute_resource: _BaseSlurmComputeResource
     ) -> Dict[str, bool]:
-        # Placement Group key is None, not managed and not an id by default
-        placement_group_key, managed, is_id = None, False, False
+        # Placement Group key is None and not managed by default
+        placement_group_key, managed = None, False
         # prefer compute level groups over queue level groups
         chosen_pg = self.get_chosen_placement_group_setting_for_compute_resource(compute_resource)
         if chosen_pg.assignment:
-            placement_group_key, managed, is_id = chosen_pg.assignment, False, chosen_pg.id is not None
+            placement_group_key, managed = chosen_pg.assignment, False
         elif chosen_pg.enabled:
             placement_group_key, managed = f"{self.name}-{compute_resource.name}", True
-        return {"key": placement_group_key, "is_managed": managed, "is_id": is_id}
+        return {"key": placement_group_key, "is_managed": managed}
 
     def is_placement_group_enabled_for_compute_resource(self, compute_resource: _BaseSlurmComputeResource) -> bool:
         return self.get_placement_group_settings_for_compute_resource(compute_resource).get("key") is not None
@@ -3111,11 +3111,14 @@ class SlurmClusterConfig(BaseClusterConfig):
                         queue_name=queue.name,
                         subnet_id_az_mapping=queue.networking.subnet_id_az_mapping,
                     )
-                    placement_group_settings = queue.get_placement_group_settings_for_compute_resource(compute_resource)
                     self._register_validator(
                         PlacementGroupCapacityReservationValidator,
-                        placement_group=placement_group_settings.get("key"),
-                        placement_group_is_id=placement_group_settings.get("is_id"),
+                        placement_group=queue.get_placement_group_settings_for_compute_resource(compute_resource).get(
+                            "key"
+                        ),
+                        placement_group_id=queue.get_chosen_placement_group_setting_for_compute_resource(
+                            compute_resource
+                        ).id,
                         odcr=cr_target,
                         subnet=queue.networking.subnet_ids[0],
                         instance_types=compute_resource.instance_types,

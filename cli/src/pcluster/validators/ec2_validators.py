@@ -258,8 +258,7 @@ class PlacementGroupNamingValidator(Validator):
                 "set either Id or Name but not both.",
                 FailureLevel.ERROR,
             )
-        identifier = placement_group.name or placement_group.id
-        if identifier:
+        if placement_group.assignment:
             if placement_group.enabled is False:
                 self._add_failure(
                     "The PlacementGroup feature must be enabled (Enabled: true) in order "
@@ -789,21 +788,7 @@ class PlacementGroupCapacityReservationValidator(Validator):
                     FailureLevel.WARNING,
                 )
 
-    @staticmethod
-    def _resolve_placement_group_name(placement_group_id):
-        """Return the name of the placement group with the given id.
-
-        The placement group of a capacity reservation is only exposed as an ARN, hence by name, so a placement group
-        given by id has to be resolved into its name before the two can be compared.
-        """
-        placement_groups = AWSApi.instance().ec2.describe_placement_group(group_id=placement_group_id)[
-            "PlacementGroups"
-        ]
-        if not placement_groups:
-            return placement_group_id
-        return placement_groups[0].get("GroupName") or placement_group_id
-
-    def _validate(self, placement_group, placement_group_is_id, odcr, subnet, instance_types, multi_az_enabled):
+    def _validate(self, placement_group, placement_group_id, odcr, subnet, instance_types, multi_az_enabled):
         if not multi_az_enabled:
             odcr_id = getattr(odcr, "capacity_reservation_id", None)
             odcr_arn = getattr(odcr, "capacity_reservation_resource_group_arn", None)
@@ -820,9 +805,13 @@ class PlacementGroupCapacityReservationValidator(Validator):
             if capacity_reservations:
                 if placement_group:
                     chosen_pg = placement_group
-                    if placement_group_is_id:
+                    if placement_group_id:
+                        # The placement group of a capacity reservation is only exposed as an ARN, hence by name,
+                        # so a group given by id has to be resolved into its name to be compared with it.
                         try:
-                            chosen_pg = self._resolve_placement_group_name(placement_group)
+                            chosen_pg = AWSApi.instance().ec2.describe_placement_group(group_id=placement_group_id)[
+                                "PlacementGroups"
+                            ][0]["GroupName"]
                         except AWSClientError:
                             # The placement group cannot be described, which PlacementGroupNamingValidator already
                             # reports: there is nothing to compare the capacity reservations against.

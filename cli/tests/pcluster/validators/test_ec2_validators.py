@@ -1519,7 +1519,7 @@ def test_placement_group_capacity_reservation_validator(
     mocker.patch("pcluster.aws.ec2.Ec2Client.get_subnet_avail_zone", return_value=desired_availability_zone)
     actual_failure = PlacementGroupCapacityReservationValidator().execute(
         placement_group=placement_group,
-        placement_group_is_id=False,
+        placement_group_id=None,
         odcr=odcr,
         subnet=subnets[0],
         instance_types=instance_types,
@@ -1529,13 +1529,13 @@ def test_placement_group_capacity_reservation_validator(
 
 
 @pytest.mark.parametrize(
-    "placement_group, placement_group_is_id, describe_placement_group_side_effect, expected_message",
+    "placement_group, placement_group_id, describe_placement_group_side_effect, expected_message",
     [
         # The capacity reservation exposes its placement group by name, so the configured id is resolved into its
         # name before the two are compared: they match and no failure is reported.
         (
             "pg-08ffdeae747b4a0f1",
-            True,
+            "pg-08ffdeae747b4a0f1",
             None,
             None,
         ),
@@ -1543,16 +1543,16 @@ def test_placement_group_capacity_reservation_validator(
         # not expected to report a failure of its own.
         (
             "pg-08ffdeae747b4a0f1",
-            True,
+            "pg-08ffdeae747b4a0f1",
             AWSClientError("describe_placement_groups", "The placement group does not exist"),
             None,
         ),
         # A group given by name is compared as is, without being resolved
-        ("mock-arn", False, None, None),
+        ("mock-arn", None, None, None),
     ],
 )
 def test_placement_group_capacity_reservation_validator_with_placement_group_id(
-    mocker, placement_group, placement_group_is_id, describe_placement_group_side_effect, expected_message
+    mocker, placement_group, placement_group_id, describe_placement_group_side_effect, expected_message
 ):
     mock_aws_api(mocker)
     mocker.patch(
@@ -1568,7 +1568,7 @@ def test_placement_group_capacity_reservation_validator_with_placement_group_id(
 
     actual_failure = PlacementGroupCapacityReservationValidator().execute(
         placement_group=placement_group,
-        placement_group_is_id=placement_group_is_id,
+        placement_group_id=placement_group_id,
         odcr=CapacityReservationTarget(capacity_reservation_id="cr-321"),
         subnet="mock-subnet-1",
         instance_types=["mock-type"],

@@ -102,14 +102,14 @@ class QueuesStack(NestedStack):
         queue, managed_placement_groups, compute_resource
     ) -> ec2.CfnLaunchTemplate.PlacementProperty:
         placement_group_settings = queue.get_placement_group_settings_for_compute_resource(compute_resource)
-        placement_group_key = placement_group_settings.get("key")
-        managed = placement_group_settings.get("is_managed")
-        if managed:
-            return ec2.CfnLaunchTemplate.PlacementProperty(group_name=managed_placement_groups[placement_group_key].ref)
-        if placement_group_settings.get("is_id"):
-            # An id has to be passed as an id: EC2 resolves GroupName as a name only.
-            return ec2.CfnLaunchTemplate.PlacementProperty(group_id=placement_group_key)
-        return ec2.CfnLaunchTemplate.PlacementProperty(group_name=placement_group_key)
+        if placement_group_settings.get("is_managed"):
+            managed_placement_group = managed_placement_groups[placement_group_settings.get("key")]
+            return ec2.CfnLaunchTemplate.PlacementProperty(group_name=managed_placement_group.ref)
+        # An id has to be passed as an id: EC2 resolves GroupName as a name only
+        chosen_placement_group = queue.get_chosen_placement_group_setting_for_compute_resource(compute_resource)
+        return ec2.CfnLaunchTemplate.PlacementProperty(
+            group_name=chosen_placement_group.name, group_id=chosen_placement_group.id
+        )
 
     @property
     def stack_name(self):
